@@ -13,7 +13,6 @@ const handleGrid = () => {
   });
 
   State.setGridRows(gridRows);
-  // console.log(gridRows.length, gridRows[0].cells.length);
   drawGrid(gridRenderer, gridRows);
 };
 
@@ -64,6 +63,7 @@ window.addEventListener("load", () => {
 
   const mainRenderer = new Renderer("#middle");
   const testScene = new TestScene(mainRenderer);
+  testScene.start();
 
   setupDevButtons(testScene);
   setupKeyboardHandler();

@@ -1,25 +1,23 @@
-import { State } from "../../../modules";
+import { GameObject, State } from "../../../modules";
 import { Position } from "../../../types";
 import { TestScene } from "../TestScene";
 
-export class Mansion {
-  private scene: TestScene;
-  private asset: HTMLImageElement;
-
+export class Mansion extends GameObject {
   public pos: Position = {
     x: 1 * State.getCellSize(),
     y: 1 * State.getCellSize(),
   };
 
   constructor(scene: TestScene) {
-    this.scene = scene;
-
-    const asset = document.getElementById("mansion");
-    if (!asset) throw new Error("Unable to get asset for Mansion");
-    this.asset = asset as HTMLImageElement;
+    super({ scene, imgAssetId: "mansion" });
   }
 
+  public update(): void {}
+
   public render(): void {
-    this.scene.renderer.TMPctx.drawImage(this.asset, this.pos.x, this.pos.y);
+    this.scene.renderer.drawImg({
+      img: this.imgAsset,
+      pos: this.pos,
+    });
   }
 }

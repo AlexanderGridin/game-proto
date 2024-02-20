@@ -1,0 +1,14 @@
+{ "columns":10,
+ "image":"..\/..\/Pictures\/Game test assets\/2\/img\/1\/tilesheet.png",
+ "imageheight":1568,
+ "imagewidth":320,
+ "margin":0,
+ "name":"tilesheet",
+ "spacing":0,
+ "tilecount":490,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

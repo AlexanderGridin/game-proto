@@ -3,7 +3,7 @@ import { GridRow } from "../types";
 
 export const drawGrid = (renderer: Renderer, gridRows: GridRow[]): void => {
   const lineWidth = 0.5;
-  const color = "#5E81AC";
+  const color = "black";
 
   gridRows.forEach((row) => {
     const rowY = row.vStart - 0.5;

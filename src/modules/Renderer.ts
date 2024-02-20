@@ -13,6 +13,11 @@ export type DrawRectConfig = {
   color?: string;
 };
 
+export type DrawImgconfig = {
+  img: HTMLImageElement;
+  pos: Position;
+};
+
 export class Renderer {
   private renderingCtx: CanvasRenderingContext2D;
 
@@ -68,6 +73,10 @@ export class Renderer {
     this.renderingCtx.strokeRect(pos.x, pos.y, size.width, size.height);
 
     this.renderingCtx.restore();
+  }
+
+  public drawImg({ img, pos }: DrawImgconfig): void {
+    this.renderingCtx.drawImage(img, pos.x, pos.y);
   }
 
   public clear(): void {

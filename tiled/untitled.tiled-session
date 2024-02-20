@@ -1,0 +1,53 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "map.tmx": {
+            "scale": 0.9529,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 436.03735963899675,
+                "y": 282.8208626298667
+            }
+        },
+        "spritesheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tiles_spritesheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tilesheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/home/hridin/DEVELOPMENT/game-ts",
+    "last.externalTilesetPath": "/home/hridin/DEVELOPMENT/game-ts",
+    "last.imagePath": "/home/hridin/Pictures/Game test assets/2/img/1",
+    "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
+    "map.height": 19,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 27,
+    "openFiles": [
+        "map.tmx",
+        "tilesheet.tsx"
+    ],
+    "project": "untitled.tiled-project",
+    "recentFiles": [
+        "tilesheet.tsx",
+        "map.tmx",
+        "spritesheet.tsx",
+        "tiles_spritesheet.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx"
+}
