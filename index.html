@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
+
+    <title>Game TS</title>
+  </head>
+
+  <body>
+    <p class="loader">Loading...</p>
+
+    <div class="dev-buttons">
+      <button id="start-button">Start requesting frame</button>
+      <button id="stop-button">Stop requesting frame</button>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="back" width="864" height="608"></canvas>
+      <canvas id="middle" width="864" height="608"></canvas>
+      <canvas id="front" width="864" height="608"></canvas>
+    </div>
+
+    <div class="hidden">
+      <img id="player" src="/assets/t_player.png" />
+      <img id="grass-tile" src="/assets/grass.png" />
+      <img id="mansion" src="/assets/mansion.png" />
+      <img id="dirt-tile" src="/assets/dirt.png" />
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
