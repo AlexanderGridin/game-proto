@@ -25,10 +25,10 @@ export class TestEntity extends GameObject {
       pos: this.pos,
     });
 
-    this.scene.renderer.strokeRect({
-      pos: this.pos,
-      size: this.size,
-      color: "red",
-    });
+    // this.scene.renderer.strokeRect({
+    //   pos: this.pos,
+    //   size: this.size,
+    //   color: "red",
+    // });
   }
 }

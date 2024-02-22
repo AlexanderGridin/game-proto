@@ -13,7 +13,7 @@ const handleGrid = () => {
   });
 
   State.setGridRows(gridRows);
-  drawGrid(gridRenderer, gridRows);
+  // drawGrid(gridRenderer, gridRows);
 };
 
 const setupDevButtons = (scene: Scene) => {
