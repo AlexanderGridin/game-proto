@@ -76,7 +76,7 @@ export class Renderer {
   }
 
   public drawImg({ img, pos }: DrawImgconfig): void {
-    this.renderingCtx.drawImage(img, pos.x, pos.y);
+    this.renderingCtx.drawImage(img, 0, 0, 32, 32, pos.x, pos.y, 64, 64);
   }
 
   public clear(): void {

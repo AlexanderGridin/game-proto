@@ -5,7 +5,7 @@ const _state: {
   cellSize: number;
 } = {
   gridRows: [],
-  cellSize: 32,
+  cellSize: 64,
 };
 
 export const State = {

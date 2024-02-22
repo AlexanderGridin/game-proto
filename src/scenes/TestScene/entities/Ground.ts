@@ -14,9 +14,10 @@ export class Ground extends GameObject {
 
     gridRows.forEach((row) => {
       row.cells.forEach((cell) => {
-        this.scene.renderer.drawImg({
-          img: this.imgAsset,
+        this.scene.renderer.drawRect({
           pos: cell.pos,
+          size: cell.size,
+          color: "#9fbe8f",
         });
       });
     });

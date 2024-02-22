@@ -15,9 +15,14 @@ export class Mansion extends GameObject {
   public update(): void {}
 
   public render(): void {
-    this.scene.renderer.drawImg({
-      img: this.imgAsset,
-      pos: this.pos,
-    });
+    const ctx = this.scene.renderer.TMPctx;
+    const cellSize = State.getCellSize();
+
+    ctx.fillStyle = "#d58772";
+    ctx.beginPath();
+    ctx.moveTo(3 * cellSize, 5 * cellSize);
+    ctx.lineTo(5 * cellSize, 1 * cellSize);
+    ctx.lineTo(7 * cellSize, 5 * cellSize);
+    ctx.fill();
   }
 }

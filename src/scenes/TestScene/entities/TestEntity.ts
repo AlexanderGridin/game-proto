@@ -3,14 +3,16 @@ import { Position, Size } from "../../../types";
 import { TestScene } from "../TestScene";
 
 export class TestEntity extends GameObject {
+  private cellSize = State.getCellSize();
+
   public pos: Position = {
-    x: 1 * State.getCellSize(),
-    y: 8 * State.getCellSize(),
+    x: 1 * this.cellSize,
+    y: 8 * this.cellSize,
   };
 
   public size: Size = {
-    width: State.getCellSize(),
-    height: State.getCellSize(),
+    width: this.cellSize,
+    height: this.cellSize,
   };
 
   constructor(scene: TestScene) {
@@ -20,15 +22,10 @@ export class TestEntity extends GameObject {
   public update(): void {}
 
   public render(): void {
-    this.scene.renderer.drawImg({
-      img: this.imgAsset,
+    this.scene.renderer.drawRect({
       pos: this.pos,
+      size: this.size,
+      color: "#5a81aa",
     });
-
-    // this.scene.renderer.strokeRect({
-    //   pos: this.pos,
-    //   size: this.size,
-    //   color: "red",
-    // });
   }
 }
