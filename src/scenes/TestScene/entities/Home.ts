@@ -1,5 +1,6 @@
 import { TestScene } from "..";
-import { GameObject, State } from "../../../modules";
+import { GameObject } from "../../../modules";
+import { globalState } from "../../../state";
 
 export class Home extends GameObject {
   constructor(scene: TestScene) {
@@ -7,7 +8,7 @@ export class Home extends GameObject {
   }
 
   public renderOn(ctx: CanvasRenderingContext2D): void {
-    const cellSize = State.getCellSize();
+    const cellSize = globalState.get("cellSize");
 
     ctx.fillStyle = "#d58772";
     ctx.beginPath();

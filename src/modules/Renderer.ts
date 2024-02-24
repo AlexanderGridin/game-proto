@@ -1,4 +1,4 @@
-import { State } from ".";
+import { globalState } from "../state";
 import { Position, Size } from "../types";
 
 export type DrawLineConfig = {
@@ -24,7 +24,7 @@ export class Renderer {
   private renderingCtx: CanvasRenderingContext2D;
 
   constructor(canvasElementId?: string) {
-    const viewportSize = State.getGameViewportSize();
+    const viewportSize = globalState.get("gameViewportSize");
 
     if (!canvasElementId) {
       const canvas = document.createElement("canvas");

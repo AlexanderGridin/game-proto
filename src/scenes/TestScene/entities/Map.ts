@@ -1,5 +1,6 @@
 import { TestScene } from "..";
-import { GameObject, Renderer, State } from "../../../modules";
+import { GameObject, Renderer } from "../../../modules";
+import { globalState } from "../../../state";
 
 export class Map extends GameObject<TestScene> {
   private preRenderer = new Renderer();
@@ -16,7 +17,7 @@ export class Map extends GameObject<TestScene> {
   }
 
   private preRenderBG(): void {
-    const gridRows = State.getGridRows();
+    const gridRows = globalState.get("gridRows");
 
     gridRows.forEach((row) => {
       row.cells.forEach((cell) => {

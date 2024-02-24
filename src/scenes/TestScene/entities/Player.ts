@@ -1,9 +1,10 @@
-import { GameObject, State } from "../../../modules";
+import { GameObject } from "../../../modules";
+import { globalState } from "../../../state";
 import { Position, Size } from "../../../types";
 import { TestScene } from "../TestScene";
 
 export class Player extends GameObject {
-  private cellSize = State.getCellSize();
+  private cellSize = globalState.get("cellSize");
 
   public pos: Position = {
     x: 7 * this.cellSize,

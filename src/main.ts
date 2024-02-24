@@ -1,5 +1,6 @@
-import { Renderer, Scene, State } from "./modules";
+import { Renderer, Scene } from "./modules";
 import { TestScene } from "./scenes/TestScene";
+import { globalState } from "./state";
 import { drawGrid, handleLoader, initGrid } from "./utils";
 
 const handleGrid = () => {
@@ -9,10 +10,10 @@ const handleGrid = () => {
       width: gridRenderer.width,
       height: gridRenderer.height,
     },
-    cellSize: State.getCellSize(),
+    cellSize: globalState.get("cellSize"),
   });
 
-  State.setGridRows(gridRows);
+  globalState.set("gridRows", gridRows);
   drawGrid(gridRenderer, gridRows);
 };
 

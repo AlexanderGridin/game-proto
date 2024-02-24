@@ -1,35 +1,15 @@
-import { GridRow, Size } from "../types";
+export class State<StateType = Record<string, any>> {
+  private _state: StateType;
 
-const _state: {
-  gridRows: GridRow[];
-  cellSize: number;
-  gameViewportSize: Size;
-} = {
-  gridRows: [],
-  cellSize: 64,
-  gameViewportSize: {
-    width: 960,
-    height: 832,
-  },
-};
+  constructor(initialState: StateType) {
+    this._state = initialState;
+  }
 
-export const State = {
-  setGridRows: (rows: GridRow[]): void => {
-    _state.gridRows = rows;
-  },
-  getGridRows: (): GridRow[] => {
-    return _state.gridRows;
-  },
+  public get<K extends keyof StateType>(key: K): StateType[K] {
+    return this._state[key];
+  }
 
-  getCellSize: (): number => {
-    return _state.cellSize;
-  },
-
-  log: (): void => {
-    console.log(_state);
-  },
-
-  getGameViewportSize: (): Size => {
-    return _state.gameViewportSize;
-  },
-};
+  public set<K extends keyof StateType>(key: K, value: StateType[K]): void {
+    this._state[key] = value;
+  }
+}
