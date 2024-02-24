@@ -1,19 +1,21 @@
 import { Scene } from "./Scene";
 
-export type GameObjectConfig = {
-  scene: Scene;
-  imgAssetId: string;
+export type GameObjectConfig<SceneType> = {
+  scene: SceneType;
+  imgAssetId?: string;
 };
 
-export abstract class GameObject {
-  protected scene: Scene;
-  protected imgAsset: HTMLImageElement;
+export abstract class GameObject<SceneType = Scene> {
+  protected scene: SceneType;
+  protected imgAsset: HTMLImageElement | null = null;
 
-  constructor({ scene, imgAssetId }: GameObjectConfig) {
+  constructor({ scene, imgAssetId }: GameObjectConfig<SceneType>) {
     this.scene = scene;
 
-    if (!imgAssetId)
-      throw new Error("Image asset id cannot be an empty string!");
+    if (!imgAssetId) {
+      console.warn("Image asset id is not provided");
+      return;
+    }
 
     const asset = document.getElementById(imgAssetId);
     if (!asset) {

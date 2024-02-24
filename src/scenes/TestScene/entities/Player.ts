@@ -2,12 +2,12 @@ import { GameObject, State } from "../../../modules";
 import { Position, Size } from "../../../types";
 import { TestScene } from "../TestScene";
 
-export class TestEntity extends GameObject {
+export class Player extends GameObject {
   private cellSize = State.getCellSize();
 
   public pos: Position = {
-    x: 1 * this.cellSize,
-    y: 8 * this.cellSize,
+    x: 7 * this.cellSize,
+    y: 6 * this.cellSize,
   };
 
   public size: Size = {
@@ -15,14 +15,25 @@ export class TestEntity extends GameObject {
     height: this.cellSize,
   };
 
+  private velocity = 5;
+
   constructor(scene: TestScene) {
     super({ scene, imgAssetId: "player" });
   }
 
-  public update(): void {}
+  public update(): void {
+    this.pos.y += this.velocity;
+
+    if (
+      this.pos.y + this.size.height >= this.scene.renderer.height ||
+      this.pos.y <= 0
+    ) {
+      this.velocity *= -1;
+    }
+  }
 
   public render(): void {
-    this.scene.renderer.drawRect({
+    this.scene.renderer.fillRect({
       pos: this.pos,
       size: this.size,
       color: "#5a81aa",

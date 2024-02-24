@@ -1,11 +1,16 @@
-import { GridRow } from "../types";
+import { GridRow, Size } from "../types";
 
 const _state: {
   gridRows: GridRow[];
   cellSize: number;
+  gameViewportSize: Size;
 } = {
   gridRows: [],
   cellSize: 64,
+  gameViewportSize: {
+    width: 960,
+    height: 832,
+  },
 };
 
 export const State = {
@@ -22,5 +27,9 @@ export const State = {
 
   log: (): void => {
     console.log(_state);
+  },
+
+  getGameViewportSize: (): Size => {
+    return _state.gameViewportSize;
   },
 };

@@ -1,3 +1,4 @@
+import { State } from ".";
 import { Position, Size } from "../types";
 
 export type DrawLineConfig = {
@@ -14,19 +15,40 @@ export type DrawRectConfig = {
 };
 
 export type DrawImgconfig = {
-  img: HTMLImageElement;
+  img: HTMLImageElement | HTMLCanvasElement;
   pos: Position;
 };
 
 export class Renderer {
+  public canvas: HTMLCanvasElement;
   private renderingCtx: CanvasRenderingContext2D;
 
-  constructor(canvasElementId: string) {
+  constructor(canvasElementId?: string) {
+    const viewportSize = State.getGameViewportSize();
+
+    if (!canvasElementId) {
+      const canvas = document.createElement("canvas");
+      canvas.width = viewportSize.width;
+      canvas.height = viewportSize.height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Unable to get canvas 2d rendering context");
+      }
+      this.renderingCtx = ctx;
+      this.canvas = canvas;
+
+      return;
+    }
+
     const canvasElement =
       document.querySelector<HTMLCanvasElement>(canvasElementId);
     if (!canvasElement) {
       throw new Error("Unable to find canvas element for provided id");
     }
+
+    canvasElement.width = viewportSize.width;
+    canvasElement.height = viewportSize.height;
 
     const ctx = canvasElement.getContext("2d");
     if (!ctx) {
@@ -34,6 +56,7 @@ export class Renderer {
     }
 
     this.renderingCtx = ctx;
+    this.canvas = canvasElement;
   }
 
   public drawLine({
@@ -42,7 +65,7 @@ export class Renderer {
     color = "#000",
     lineWidth = 1,
   }: DrawLineConfig): void {
-    this.renderingCtx.save();
+    // this.renderingCtx.save();
 
     this.renderingCtx.lineWidth = lineWidth;
     this.renderingCtx.strokeStyle = color;
@@ -54,29 +77,30 @@ export class Renderer {
 
     this.renderingCtx.stroke();
 
-    this.renderingCtx.restore();
+    // this.renderingCtx.restore();
   }
 
-  public drawRect({ pos, size, color = "#000" }: DrawRectConfig) {
-    this.renderingCtx.save();
+  public fillRect({ pos, size, color = "#000" }: DrawRectConfig) {
+    // this.renderingCtx.save();
 
     this.renderingCtx.fillStyle = color;
     this.renderingCtx.fillRect(pos.x, pos.y, size.width, size.height);
 
-    this.renderingCtx.restore();
+    // this.renderingCtx.restore();
   }
 
   public strokeRect({ pos, size, color = "#000" }: DrawRectConfig) {
-    this.renderingCtx.save();
+    // this.renderingCtx.save();
 
     this.renderingCtx.strokeStyle = color;
     this.renderingCtx.strokeRect(pos.x, pos.y, size.width, size.height);
 
-    this.renderingCtx.restore();
+    // this.renderingCtx.restore();
   }
 
   public drawImg({ img, pos }: DrawImgconfig): void {
-    this.renderingCtx.drawImage(img, 0, 0, 32, 32, pos.x, pos.y, 64, 64);
+    // this.renderingCtx.drawImage(img, 0, 0, 32, 32, pos.x, pos.y, 64, 64);
+    this.renderingCtx.drawImage(img, pos.x, pos.y);
   }
 
   public clear(): void {

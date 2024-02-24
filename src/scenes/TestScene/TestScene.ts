@@ -1,20 +1,20 @@
 import { Scene } from "../../modules";
-import { TestEntity } from "./entities/TestEntity";
-import { Ground } from "./entities/Ground";
-import { Mansion } from "./entities/Mansion";
+import { Player } from "./entities/Player";
+import { Map } from "./entities/Map";
+import { Home } from "./entities/Home";
 
 export class TestScene extends Scene {
-  private square = new TestEntity(this);
-  private ground = new Ground(this);
-  private mansion = new Mansion(this);
+  public player = new Player(this);
+  public home = new Home(this);
+
+  private map = new Map(this);
 
   protected update(): void {
-    this.square.update();
+    this.player.update();
   }
 
   protected render(): void {
-    this.ground.render();
-    this.mansion.render();
-    this.square.render();
+    this.map.render();
+    this.player.render();
   }
 }
