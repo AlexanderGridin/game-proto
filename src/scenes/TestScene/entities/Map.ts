@@ -22,6 +22,9 @@ export class Map extends GameObject<TestScene> {
 
   private preRenderBG(): void {
     const gridRows = globalState.get("gridRows");
+    const viewportWidth = globalState.get("gameViewportSize").width;
+
+    this.preRenderer.width = viewportWidth * 2;
 
     gridRows.forEach((row) => {
       row.cells.forEach((cell) => {
@@ -30,13 +33,22 @@ export class Map extends GameObject<TestScene> {
           size: cell.size,
           color: "#90c78a",
         });
+
+        this.preRenderer.fillRect({
+          pos: {
+            y: cell.pos.y,
+            x: cell.pos.x + this.preRenderer.width / 2,
+          },
+          size: cell.size,
+          color: "#d8dde9",
+        });
       });
     });
   }
 
   public update(): void {
     this.move();
-    this.checkCollisionWithPlayer();
+    // this.checkCollisionWithPlayer();
   }
 
   private move(): void {
@@ -61,39 +73,39 @@ export class Map extends GameObject<TestScene> {
     }
   }
 
-  private checkCollisionWithPlayer(): void {
-    const player = this.scene.player;
-    const gridRows = globalState.get("gridRows");
-    const cellSize = globalState.get("cellSize");
+  // private checkCollisionWithPlayer(): void {
+  //   const player = this.scene.player;
+  //   const gridRows = globalState.get("gridRows");
+  //   const cellSize = globalState.get("cellSize");
 
-    const isLeftCollision = this.pos.x >= player.pos.x;
-    if (isLeftCollision) {
-      this.pos.x = player.pos.x;
-    }
+  //   const isLeftCollision = this.pos.x >= player.pos.x;
+  //   if (isLeftCollision) {
+  //     this.pos.x = player.pos.x;
+  //   }
 
-    const isTopCollision = this.pos.y >= player.pos.y;
-    if (isTopCollision) {
-      this.pos.y = player.pos.y;
-    }
+  //   const isTopCollision = this.pos.y >= player.pos.y;
+  //   if (isTopCollision) {
+  //     this.pos.y = player.pos.y;
+  //   }
 
-    const mapWidth = gridRows[0].cells.length * cellSize;
-    const mapRight = this.pos.x + mapWidth;
-    const playerRight = player.pos.x + player.size.width;
-    const isRightCollision = mapRight < playerRight;
+  //   const mapWidth = gridRows[0].cells.length * cellSize;
+  //   const mapRight = this.pos.x + mapWidth;
+  //   const playerRight = player.pos.x + player.size.width;
+  //   const isRightCollision = mapRight < playerRight;
 
-    if (isRightCollision) {
-      this.pos.x = playerRight - gridRows[0].cells.length * cellSize;
-    }
+  //   if (isRightCollision) {
+  //     this.pos.x = playerRight - gridRows[0].cells.length * cellSize;
+  //   }
 
-    const mapHeight = gridRows.length * cellSize;
-    const mapBottom = this.pos.y + mapHeight;
-    const playerBottom = player.pos.y + player.size.height;
-    const isBottomCollision = mapBottom < playerBottom;
+  //   const mapHeight = gridRows.length * cellSize;
+  //   const mapBottom = this.pos.y + mapHeight;
+  //   const playerBottom = player.pos.y + player.size.height;
+  //   const isBottomCollision = mapBottom < playerBottom;
 
-    if (isBottomCollision) {
-      this.pos.y = playerBottom - mapHeight;
-    }
-  }
+  //   if (isBottomCollision) {
+  //     this.pos.y = playerBottom - mapHeight;
+  //   }
+  // }
 
   public render(): void {
     this.scene.renderer.drawImg({

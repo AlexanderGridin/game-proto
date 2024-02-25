@@ -100,6 +100,7 @@ export class Renderer {
 
   public drawImg({ img, pos }: DrawImgconfig): void {
     // this.renderingCtx.drawImage(img, 0, 0, 32, 32, pos.x, pos.y, 64, 64);
+    // this.renderingCtx.drawImage(img, pos.x, pos.y, 128, 128);
     this.renderingCtx.drawImage(img, pos.x, pos.y);
   }
 
@@ -117,5 +118,13 @@ export class Renderer {
 
   public get TMPctx(): CanvasRenderingContext2D {
     return this.renderingCtx;
+  }
+
+  public set width(w: number) {
+    this.canvas.width = w;
+  }
+
+  public set height(h: number) {
+    this.canvas.height = h;
   }
 }
