@@ -10,6 +10,7 @@ export class TestScene extends Scene {
   private map = new Map(this);
 
   protected update(): void {
+    this.map.update();
     this.player.update();
   }
 
