@@ -1,21 +1,7 @@
 import { Renderer, Scene } from "./modules";
 import { TestScene } from "./scenes/TestScene";
 import { globalState } from "./state";
-import { drawGrid, handleLoader, initGrid } from "./utils";
-
-const handleGrid = () => {
-  const gridRenderer = new Renderer("#front");
-  const gridRows = initGrid({
-    gridSize: {
-      width: gridRenderer.width,
-      height: gridRenderer.height,
-    },
-    cellSize: globalState.get("cellSize"),
-  });
-
-  globalState.set("gridRows", gridRows);
-  drawGrid(gridRenderer, gridRows);
-};
+import { handleLoader, initGrid } from "./utils";
 
 const setupDevButtons = (scene: Scene) => {
   document.body.addEventListener("click", (e) => {
@@ -36,36 +22,29 @@ const setupDevButtons = (scene: Scene) => {
   });
 };
 
-const setupKeyboardHandler = () => {
-  window.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "ArrowRight":
-        console.log("Right");
-        break;
-
-      case "ArrowLeft":
-        console.log("Left");
-        break;
-
-      case "ArrowUp":
-        console.log("Up");
-        break;
-
-      case "ArrowDown":
-        console.log("Down");
-        break;
-    }
-  });
-};
-
 window.addEventListener("load", () => {
   handleLoader();
-  handleGrid();
 
-  const mainRenderer = new Renderer("#middle");
+  const v = globalState.get("gameViewportSize");
+  const gridRows = initGrid({
+    gridSize: {
+      width: v.width,
+      height: v.height,
+    },
+    cellSize: globalState.get("cellSize"),
+  });
+
+  globalState.set("gridRows", gridRows);
+
+  const c = document.getElementById("game");
+  if (c) {
+    (c as HTMLCanvasElement).width = v.width;
+    (c as HTMLCanvasElement).height = v.height;
+  }
+
+  const mainRenderer = new Renderer("#game");
   const testScene = new TestScene(mainRenderer);
   testScene.start();
 
   setupDevButtons(testScene);
-  setupKeyboardHandler();
 });
