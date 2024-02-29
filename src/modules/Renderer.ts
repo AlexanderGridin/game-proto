@@ -23,15 +23,15 @@ export class Renderer {
   public canvas: HTMLCanvasElement;
   private renderingCtx: CanvasRenderingContext2D;
 
-  constructor(canvasElementId?: string) {
-    const viewportSize = globalState.get("gameViewportSize");
+  constructor({ canvasId, size }: { canvasId?: string; size?: Size }) {
+    const viewportSize = size || globalState.get("gameViewportSize");
 
-    if (!canvasElementId) {
+    if (!canvasId) {
       const canvas = document.createElement("canvas");
       canvas.width = viewportSize.width;
       canvas.height = viewportSize.height;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) {
         throw new Error("Unable to get canvas 2d rendering context");
       }
@@ -41,8 +41,7 @@ export class Renderer {
       return;
     }
 
-    const canvasElement =
-      document.querySelector<HTMLCanvasElement>(canvasElementId);
+    const canvasElement = document.querySelector<HTMLCanvasElement>(canvasId);
     if (!canvasElement) {
       throw new Error("Unable to find canvas element for provided id");
     }

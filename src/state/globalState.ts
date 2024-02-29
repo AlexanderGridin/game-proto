@@ -1,18 +1,27 @@
 import { State } from "../modules";
-import { GridRow, Size } from "../types";
+import { Size } from "../types";
 
 type GlobalState = {
-  gridRows: GridRow[];
   cellSize: number;
   gameViewportSize: Size;
+  chunkSize: Size;
 };
 
+const cellSize = 48;
+
 const initialState: GlobalState = {
-  gridRows: [],
-  cellSize: 64,
+  cellSize,
   gameViewportSize: {
-    width: 960,
-    height: 832,
+    // width: 960,
+    // height: 816,
+    width: window.innerWidth,
+    height: window.innerHeight,
+  },
+  chunkSize: {
+    width: 30 * cellSize,
+    height: 30 * cellSize,
+    // width: 15 * cellSize,
+    // height: 15 * cellSize,
   },
 };
 

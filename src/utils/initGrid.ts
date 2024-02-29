@@ -1,12 +1,12 @@
 import { GridRow, Size } from "../types";
 
 type InitGridConfig = {
-  gridSize: Size;
+  size: Size;
   cellSize: number;
 };
 
-export const initGrid = ({ gridSize, cellSize }: InitGridConfig): GridRow[] => {
-  const { width, height } = gridSize;
+export const initGrid = ({ size, cellSize }: InitGridConfig): GridRow[] => {
+  const { width, height } = size;
   const cols = width / cellSize;
   const rows = height / cellSize;
 

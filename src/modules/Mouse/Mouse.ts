@@ -5,6 +5,8 @@ export class _Mouse {
   private canvas: HTMLCanvasElement;
   public pos: Position = { x: 0, y: 0 };
 
+  private listeners: (() => void)[] = [];
+
   constructor() {
     const canvas = document.querySelector<HTMLCanvasElement>("#game");
 
@@ -25,9 +27,14 @@ export class _Mouse {
       this.pos.y = e.clientY - rect.top * (canvas.height / rect.height);
     });
 
-    window.addEventListener("click", (e) => {
-      console.log(e.button);
+    window.addEventListener("click", () => {
+      // console.log(e.button);
+      this.listeners.forEach((listenerFn) => listenerFn());
     });
+  }
+
+  public onClick(fn: () => void): void {
+    this.listeners.push(fn);
   }
 }
 

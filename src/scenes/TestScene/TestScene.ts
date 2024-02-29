@@ -3,18 +3,17 @@ import { Player } from "./entities/Player";
 import { Map } from "./entities/Map";
 import { Home } from "./entities/Home";
 import { MousePointer } from "./entities/MousePointer";
-import { Grid } from "./entities/Grid";
+import { Camera } from "./entities/Camera";
 
 export class TestScene extends Scene {
+  public camera = new Camera();
   public player = new Player(this);
   public home = new Home(this);
   public cursor = new MousePointer(this);
-  public grid = new Grid(this);
-
-  private map = new Map(this);
+  public map = new Map(this);
 
   protected update(): void {
-    this.grid.update();
+    this.camera.update();
     this.map.update();
     this.player.update();
     this.cursor.update();
@@ -23,7 +22,6 @@ export class TestScene extends Scene {
   protected render(): void {
     this.map.render();
     this.player.render();
-    this.grid.render();
     this.cursor.render();
   }
 }
