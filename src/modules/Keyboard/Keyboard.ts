@@ -7,6 +7,7 @@ class _Keyboard {
   constructor() {
     window.addEventListener("keydown", (e) => {
       const key = e.key as KeyboardKeyCode;
+      // console.log(key);
 
       if (!this.registry[key]) {
         return;
@@ -32,6 +33,7 @@ class _Keyboard {
     return this.registry[key].isPressed;
   }
 
+  // TODO: made this callable more than one time per key
   public isKeyClicked(key: KeyboardKeyCode): boolean {
     const isKeyClicked = this.registry[key].isClicked;
     const isKeyClickedPreviously = this.registry[key].prevIsClicked;

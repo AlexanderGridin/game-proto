@@ -5,9 +5,10 @@ type GlobalState = {
   cellSize: number;
   gameViewportSize: Size;
   chunkSize: Size;
+  mapLayers: any;
 };
 
-const cellSize = 48;
+const cellSize = 32;
 
 const initialState: GlobalState = {
   cellSize,
@@ -23,6 +24,7 @@ const initialState: GlobalState = {
     // width: 15 * cellSize,
     // height: 15 * cellSize,
   },
+  mapLayers: [],
 };
 
 export const globalState = new State<GlobalState>(initialState);

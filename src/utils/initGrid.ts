@@ -11,6 +11,7 @@ export const initGrid = ({ size, cellSize }: InitGridConfig): GridRow[] => {
   const rows = height / cellSize;
 
   const result: GridRow[] = [];
+  let index = 0;
 
   for (let r = 0; r < rows; r++) {
     const vStart = r * cellSize;
@@ -32,6 +33,8 @@ export const initGrid = ({ size, cellSize }: InitGridConfig): GridRow[] => {
           width: cellSize,
           height: cellSize,
         },
+        index: index++,
+        rowIndex: r,
       });
     }
   }

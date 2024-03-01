@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="10" height="3" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" source="terrain_tiles_v2.tsx"/>
+ <tileset firstgid="161" source="assets_spritesheet_v2_free.tsx"/>
+ <tileset firstgid="305" name="bush1" tilewidth="32" tileheight="32" tilecount="1" columns="1">
+  <image source="../../public/assets/tiles/bush1.png" width="32" height="32"/>
+ </tileset>
+ <tileset firstgid="306" name="stone1" tilewidth="32" tileheight="32" tilecount="1" columns="1">
+  <image source="../../public/assets/tiles/stone1.png" width="32" height="32"/>
+ </tileset>
+ <tileset firstgid="307" name="chomp" tilewidth="32" tileheight="32" tilecount="1" columns="1">
+  <image source="../../public/assets/tiles/chomp.png" width="32" height="32"/>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="10" height="3">
+  <data encoding="csv">
+52,56,154,52,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,307,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Tile Layer 2" width="10" height="3">
+  <data encoding="csv">
+0,0,0,16,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+306,305,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>

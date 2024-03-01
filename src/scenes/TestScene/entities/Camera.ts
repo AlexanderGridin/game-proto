@@ -13,7 +13,7 @@ export enum Direction {
 export class Camera {
   public size: Size;
   public pos: Position = new Position();
-  public speed = 5;
+  public speed = 2;
   public direction: Direction | null = null;
 
   constructor() {
@@ -24,31 +24,37 @@ export class Camera {
   }
 
   public update(): void {
-    this.move();
+    let speed = this.speed;
+
+    if (Keyboard.isKeyPressed(KeyboardKeyCode.SHIFT)) {
+      speed *= speed;
+    }
+
+    this.move(speed);
   }
 
-  private move(): void {
+  private move(speed: number): void {
     if (Keyboard.isKeyPressed(KeyboardKeyCode.S)) {
       this.direction = Direction.Bottom;
-      this.pos.y -= this.speed;
+      this.pos.y -= speed;
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.W)) {
       this.direction = Direction.Top;
-      this.pos.y += this.speed;
+      this.pos.y += speed;
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.A)) {
       this.direction = Direction.Left;
-      this.pos.x += this.speed;
+      this.pos.x += speed;
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.D)) {
       this.direction = Direction.Right;
-      this.pos.x -= this.speed;
+      this.pos.x -= speed;
       return;
     }
 

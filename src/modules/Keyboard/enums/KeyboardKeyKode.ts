@@ -10,4 +10,6 @@ export enum KeyboardKeyCode {
   S = "s",
   W = "w",
   A = "a",
+  E = "e",
+  SHIFT = "Shift",
 }
