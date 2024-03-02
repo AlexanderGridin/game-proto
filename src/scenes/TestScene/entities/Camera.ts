@@ -1,5 +1,4 @@
-import { Keyboard } from "../../../modules/Keyboard";
-import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
+import { GameObject } from "../../../modules";
 import { globalState } from "../../../state";
 import { Position, Size } from "../../../types";
 
@@ -14,51 +13,70 @@ export class Camera {
   public size: Size;
   public pos: Position = new Position();
   public speed = 2;
-  public direction: Direction | null = null;
+
+  public gameObjectToFollow: GameObject | null = null;
+  public gameObjectToFollowPrevPos: Position | null = null;
 
   constructor() {
     const viewportSize = globalState.get("gameViewportSize");
     this.size = viewportSize;
-    // this.pos.x = -700;
-    // this.pos.y = -800;
+  }
+
+  public get offset(): Position {
+    return {
+      x: -this.pos.x,
+      y: -this.pos.y,
+    };
+  }
+
+  public get center(): Position {
+    return {
+      x: this.size.width / 2,
+      y: this.size.height / 2,
+    };
+  }
+
+  public isFolowing(gameObject: GameObject): boolean {
+    return this.gameObjectToFollow === gameObject;
+  }
+
+  public follow(object: GameObject): void {
+    this.gameObjectToFollow = object;
+    this.moveFollowingObjectToCenter(object);
+    this.gameObjectToFollowPrevPos = { ...object.pos };
+  }
+
+  private moveFollowingObjectToCenter(object: GameObject): void {
+    object.pos = {
+      x: Math.floor(this.size.width / 2 - object.size.width / 2),
+      y: Math.floor(this.size.height / 2 - object.size.height / 2),
+    };
   }
 
   public update(): void {
-    let speed = this.speed;
-
-    if (Keyboard.isKeyPressed(KeyboardKeyCode.SHIFT)) {
-      speed *= speed;
-    }
-
-    this.move(speed);
+    this.handleGameObjectFollowing();
   }
 
-  private move(speed: number): void {
-    if (Keyboard.isKeyPressed(KeyboardKeyCode.S)) {
-      this.direction = Direction.Bottom;
-      this.pos.y -= speed;
-      return;
-    }
+  private handleGameObjectFollowing(): void {
+    const objectToFollow = this.gameObjectToFollow;
+    const objectToFollowPrevPos = this.gameObjectToFollowPrevPos;
 
-    if (Keyboard.isKeyPressed(KeyboardKeyCode.W)) {
-      this.direction = Direction.Top;
-      this.pos.y += speed;
-      return;
-    }
+    if (!objectToFollow || !objectToFollowPrevPos) return;
 
-    if (Keyboard.isKeyPressed(KeyboardKeyCode.A)) {
-      this.direction = Direction.Left;
-      this.pos.x += speed;
-      return;
-    }
+    const xOffset = objectToFollow.pos.x - objectToFollowPrevPos.x;
+    const yOffset = objectToFollow.pos.y - objectToFollowPrevPos.y;
 
-    if (Keyboard.isKeyPressed(KeyboardKeyCode.D)) {
-      this.direction = Direction.Right;
-      this.pos.x -= speed;
-      return;
-    }
+    this.pos.x += xOffset;
+    this.pos.y += yOffset;
 
-    this.direction = null;
+    // TODO: update to correct types
+    (objectToFollow as any).updatePos(
+      (objectToFollow.pos = this.gameObjectToFollowPrevPos
+        ? this.gameObjectToFollowPrevPos
+        : objectToFollow.pos),
+    );
+
+    this.gameObjectToFollowPrevPos = { ...objectToFollow.pos };
   }
 
   public setPos(pos: Position): void {

@@ -50,7 +50,7 @@ export class GameMap extends GameObject<TestScene> {
 
       this.scene.camera.setPos({
         ...this.scene.camera.pos,
-        x,
+        x: -x,
       });
     }
   }
@@ -202,6 +202,7 @@ export class GameMap extends GameObject<TestScene> {
       }
 
       if (tileCode === 308) {
+        // replace dirt to grass
         // dirt
         // sx = 3 * cellSize;
         // grass
@@ -224,7 +225,10 @@ export class GameMap extends GameObject<TestScene> {
 
   public removeItem(item: GameItem): void {
     this.itemsRegistry.delete(item.cellIndex);
-    this.colliders = this.colliders.filter((i) => i.parentId !== item.id);
+    this.colliders = this.colliders.filter(
+      (collider) => collider.parentId !== item.id,
+    );
+
     this.renderItems();
     this.renderBoundaries();
   }
@@ -240,13 +244,12 @@ export class GameMap extends GameObject<TestScene> {
 
   private getBoundariesData(pos: Position) {
     if (!this.collidersData) return;
+    const cameraOffset = this.scene.camera.offset;
 
     const { x, y } = pos;
     const r =
       this.collidersData[
-        (this.size.width * (y - this.scene.camera.pos.y) +
-          (x - this.scene.camera.pos.x)) *
-          4
+        (this.size.width * (y - cameraOffset.y) + (x - cameraOffset.x)) * 4
       ];
 
     return r === 255;
@@ -292,64 +295,78 @@ export class GameMap extends GameObject<TestScene> {
     const isCollision = this.isBoundaryCollision(player.collider);
     if (!isCollision) return;
 
-    const boundary = this.colliders.find((boundary) => {
+    const collider = this.colliders.find((collider) => {
+      const colliderPos: Position = {
+        x: camera.offset.x + collider.pos.x,
+        y: camera.offset.y + collider.pos.y,
+      };
+
       return this.rectCollision(
         {
-          pos: {
-            x: camera.pos.x + boundary.pos.x,
-            y: camera.pos.y + boundary.pos.y,
-          },
-          size: boundary.size,
+          pos: colliderPos,
+          size: collider.size,
         },
         player.collider,
       );
     });
 
-    if (!boundary) return;
+    if (!collider) return;
 
     const { Left, Right, Top, Bottom } = Direction;
 
-    switch (camera.direction) {
+    switch (player.direction) {
       case Left: {
         const x =
-          player.collider.pos.x - (boundary.pos.x + boundary.size.width);
-        camera.setPos({
-          ...camera.pos,
+          camera.offset.x +
+          collider.pos.x +
+          collider.size.width -
+          (player.collider.pos.x - player.pos.x);
+
+        player.pos = {
+          ...player.pos,
           x,
-        });
+        };
 
         break;
       }
 
       case Right: {
         const x =
-          player.collider.pos.x + player.collider.size.width - boundary.pos.x;
-        camera.setPos({
-          ...camera.pos,
+          camera.offset.x +
+          collider.pos.x -
+          player.collider.size.width -
+          (player.collider.pos.x - player.pos.x);
+
+        player.pos = {
+          ...player.pos,
           x,
-        });
+        };
 
         break;
       }
 
       case Top: {
         const y =
-          player.collider.pos.y - (boundary.pos.y + boundary.size.height);
-        camera.setPos({
-          ...camera.pos,
+          camera.offset.y +
+          collider.pos.y +
+          collider.size.height -
+          (player.collider.pos.y - player.pos.y);
+
+        player.pos = {
+          ...player.pos,
           y,
-        });
+        };
 
         break;
       }
 
       case Bottom: {
-        const y =
-          player.collider.pos.y + player.collider.size.height - boundary.pos.y;
-        camera.setPos({
-          ...camera.pos,
+        const y = camera.offset.y + collider.pos.y - player.size.height;
+
+        player.pos = {
+          ...player.pos,
           y,
-        });
+        };
 
         break;
       }
@@ -367,14 +384,14 @@ export class GameMap extends GameObject<TestScene> {
   private drawMap(): void {
     this.scene.renderer.drawImg({
       img: this.preRenderer.canvas,
-      pos: this.scene.camera.pos,
+      pos: this.scene.camera.offset,
     });
   }
 
   private drawItems(): void {
     this.scene.renderer.drawImg({
       img: this.itemsRenderer.canvas,
-      pos: this.scene.camera.pos,
+      pos: this.scene.camera.offset,
     });
   }
 
@@ -383,7 +400,7 @@ export class GameMap extends GameObject<TestScene> {
 
     this.scene.renderer.drawImg({
       img: this.collidersRenderer.canvas,
-      pos: this.scene.camera.pos,
+      pos: this.scene.camera.offset,
     });
   }
 }

@@ -1,3 +1,4 @@
+import { Position, Size } from "../types";
 import { Scene } from "./Scene";
 
 export type GameObjectConfig<SceneType> = {
@@ -8,6 +9,9 @@ export type GameObjectConfig<SceneType> = {
 export abstract class GameObject<SceneType = Scene> {
   protected scene: SceneType;
   protected imgAsset: HTMLImageElement | null = null;
+
+  public abstract pos: Position;
+  public abstract size: Size;
 
   constructor({ scene, imgAssetId }: GameObjectConfig<SceneType>) {
     this.scene = scene;

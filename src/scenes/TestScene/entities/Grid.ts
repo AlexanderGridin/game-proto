@@ -3,7 +3,7 @@ import { GameObject, Renderer } from "../../../modules";
 import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { globalState } from "../../../state";
-import { GridCell, GridRow, Size } from "../../../types";
+import { GridCell, GridRow, Position, Size } from "../../../types";
 import { initGrid } from "../../../utils";
 
 export class Grid extends GameObject<TestScene> {
@@ -17,11 +17,13 @@ export class Grid extends GameObject<TestScene> {
   private emitedObject: any | null = null;
 
   private preRenderer: Renderer;
-  private isRender = false;
+  private isDrawGrid = false;
 
-  private size: Size;
+  public size: Size;
+  public pos = new Position();
+
   private cellClickListeners: ((cell: GridCell) => void)[] = [];
-  private hoveredObject: any | null = null;
+  private hoveredItem: any | null = null;
 
   constructor(scene: TestScene, size: Size) {
     super({ scene });
@@ -90,7 +92,7 @@ export class Grid extends GameObject<TestScene> {
 
   public update(): void {
     if (Keyboard.isKeyClicked(KeyboardKeyCode.G)) {
-      this.isRender = !this.isRender;
+      this.isDrawGrid = !this.isDrawGrid;
     }
 
     this.handleMouseHover();
@@ -130,10 +132,10 @@ export class Grid extends GameObject<TestScene> {
     const camera = this.scene.camera;
 
     return (
-      player.pos.x < cell.pos.x + cell.size.width + camera.pos.x &&
-      player.pos.x + player.size.width > cell.pos.x + camera.pos.x &&
-      player.pos.y < cell.pos.y + cell.size.height + camera.pos.y &&
-      player.pos.y + player.size.height > cell.pos.y + camera.pos.y
+      player.pos.x < cell.pos.x + cell.size.width + camera.offset.x &&
+      player.pos.x + player.size.width > cell.pos.x + camera.offset.x &&
+      player.pos.y < cell.pos.y + cell.size.height + camera.offset.y &&
+      player.pos.y + player.size.height > cell.pos.y + camera.offset.y
     );
   }
 
@@ -142,16 +144,19 @@ export class Grid extends GameObject<TestScene> {
     const camera = this.scene.camera;
 
     return (
-      player.pos.y + player.size.height > camera.pos.y + row.vStart &&
-      player.pos.y < camera.pos.y + row.vEnd
+      player.pos.y + player.size.height > camera.offset.y + row.vStart &&
+      player.pos.y < camera.offset.y + row.vEnd
     );
   }
 
   private handleMouseHover(): void {
-    if (this.hoveredRow && this.isInRowBoundaries(this.hoveredRow)) {
-      if (this.hoveredCell && this.isInCellBoundaries(this.hoveredCell)) {
-        return;
-      }
+    if (
+      this.hoveredRow &&
+      this.isInRowBoundaries(this.hoveredRow) &&
+      this.hoveredCell &&
+      this.isInCellBoundaries(this.hoveredCell)
+    ) {
+      return;
     }
 
     const row = this.rows.find((row) => this.isInRowBoundaries(row));
@@ -167,15 +172,15 @@ export class Grid extends GameObject<TestScene> {
 
     if (this.hoveredCell) {
       const item = this.scene.map.itemsRegistry.get(this.hoveredCell.index);
-      this.hoveredObject = item ?? null;
+      this.hoveredItem = item ?? null;
     }
   }
 
   private isInRowBoundaries(row: GridRow): boolean {
     const mouse = this.scene.mouse;
     return (
-      mouse.pos.y > this.scene.camera.pos.y + row.vStart &&
-      mouse.pos.y < this.scene.camera.pos.y + row.vEnd
+      mouse.pos.y > this.scene.camera.offset.y + row.vStart &&
+      mouse.pos.y < this.scene.camera.offset.y + row.vEnd
     );
   }
 
@@ -186,77 +191,58 @@ export class Grid extends GameObject<TestScene> {
     const camera = this.scene.camera;
 
     return (
-      mouseX >= cell.pos.x + camera.pos.x &&
-      mouseX <= cell.pos.x + cell.size.width + camera.pos.x &&
-      mouseY >= cell.pos.y + camera.pos.y &&
-      mouseY <= cell.pos.y + cell.size.height + camera.pos.y
+      mouseX >= cell.pos.x + camera.offset.x &&
+      mouseX <= cell.pos.x + cell.size.width + camera.offset.x &&
+      mouseY >= cell.pos.y + camera.offset.y &&
+      mouseY <= cell.pos.y + cell.size.height + camera.offset.y
     );
   }
 
   public render(): void {
-    if (this.isRender) {
-      this.scene.renderer.drawImg({
-        img: this.preRenderer.canvas,
-        pos: this.scene.camera.pos,
-      });
-    }
-
-    // this.renderRow();
-    this.renderCell();
+    this.drawGrid();
+    this.drawCell();
+    this.drawHoveredItemHover();
   }
 
-  // private renderRow(): void {
-  //   this.playerHoveredRows.forEach((row) => {
-  //     row.cells.forEach((cell) => {
-  //       this.scene.renderer.fillRect({
-  //         pos: {
-  //           x: cell.pos.x + this.scene.camera.pos.x,
-  //           y: cell.pos.y + this.scene.camera.pos.y,
-  //         },
-  //         size: cell.size,
-  //         color: "rgba(46, 52, 64, 0.1)",
-  //       });
-  //     });
-  //   });
-  // }
+  private drawGrid(): void {
+    if (!this.isDrawGrid) return;
 
-  private renderCell(): void {
-    if (this.playerHoveredCells.length) {
-      this.playerHoveredCells.forEach((cell) => {
-        if (!cell) return;
-        // this.scene.renderer.fillRect({
-        //   pos: {
-        //     x: cell.pos.x + this.scene.camera.pos.x,
-        //     y: cell.pos.y + this.scene.camera.pos.y,
-        //   },
-        //   size: cell.size,
-        //   color: "rgba(255, 0, 0, 0.3)",
-        // });
+    this.scene.renderer.drawImg({
+      img: this.preRenderer.canvas,
+      pos: this.scene.camera.offset,
+    });
+  }
 
-        const item = this.scene.map.itemsRegistry.get(cell.index);
+  private drawCell(): void {
+    if (!this.playerHoveredCells.length) return;
 
-        if (item) {
-          this.scene.renderer.strokeRect({
-            pos: {
-              x: cell.pos.x + this.scene.camera.pos.x,
-              y: cell.pos.y + this.scene.camera.pos.y,
-            },
-            size: cell.size,
-            color: "black",
-          });
-        }
-      });
-    }
+    this.playerHoveredCells.forEach((cell) => {
+      if (!cell) return;
 
-    if (this.hoveredObject) {
-      this.scene.renderer.fillRect({
-        pos: {
-          x: this.hoveredObject.pos.x + this.scene.camera.pos.x,
-          y: this.hoveredObject.pos.y + this.scene.camera.pos.y,
-        },
-        size: this.hoveredCell!.size,
-        color: "rgba(0, 255, 0, 0.3)",
-      });
-    }
+      const item = this.scene.map.itemsRegistry.get(cell.index);
+      if (item) {
+        this.scene.renderer.strokeRect({
+          pos: {
+            x: cell.pos.x + this.scene.camera.offset.x,
+            y: cell.pos.y + this.scene.camera.offset.y,
+          },
+          size: cell.size,
+          color: "black",
+        });
+      }
+    });
+  }
+
+  private drawHoveredItemHover(): void {
+    if (!this.hoveredItem) return;
+
+    this.scene.renderer.fillRect({
+      pos: {
+        x: this.hoveredItem.pos.x + this.scene.camera.offset.x,
+        y: this.hoveredItem.pos.y + this.scene.camera.offset.y,
+      },
+      size: this.hoveredCell!.size,
+      color: "rgba(0, 255, 0, 0.3)",
+    });
   }
 }

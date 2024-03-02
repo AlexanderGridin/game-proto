@@ -2,18 +2,17 @@ import { Scene } from "../../modules";
 import { Player } from "./entities/Player";
 import { GameMap } from "./entities/Map";
 // import { MousePointer } from "./entities/MousePointer";
-import { Camera } from "./entities/Camera";
 
 export class TestScene extends Scene {
-  public camera = new Camera();
   // public cursor = new MousePointer(this);
   public map = new GameMap(this);
   public player = new Player(this);
 
   protected update(): void {
-    this.camera.update();
-    this.map.update();
+    // NOTE: player needs to be updated before the map because in the map collision detecion is taked place
+    // TODO: update this, so the order needs to be not important
     this.player.update();
+    this.map.update();
     // this.cursor.update();
   }
 

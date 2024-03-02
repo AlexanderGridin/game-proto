@@ -2,6 +2,7 @@ import { Renderer } from "./Renderer";
 import { GameLoop } from "./GameLoop";
 import { Mouse } from "./Mouse";
 import { Keyboard } from "./Keyboard";
+import { Camera } from "../scenes/TestScene/entities/Camera";
 
 export abstract class Scene {
   private gameLoop: GameLoop;
@@ -9,6 +10,7 @@ export abstract class Scene {
   public renderer: Renderer;
   public mouse = Mouse;
   public keyboard = Keyboard;
+  public camera = new Camera();
 
   constructor(renderer: Renderer) {
     this.renderer = renderer;
@@ -22,6 +24,7 @@ export abstract class Scene {
 
   private _update(): void {
     this.update();
+    this.camera.update();
   }
 
   private _render(): void {
