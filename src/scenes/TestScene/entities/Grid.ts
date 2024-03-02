@@ -38,13 +38,12 @@ export class Grid extends GameObject<TestScene> {
     this.preRender();
 
     this.scene.mouse.onClick(() => {
-      if (this.hoveredCell) {
-        this.cellClickListeners.forEach((listener) => {
-          if (this.hoveredCell) {
-            listener(this.hoveredCell);
-          }
-        });
-      }
+      if (!this.hoveredCell) return;
+
+      this.cellClickListeners.forEach((listener) => {
+        if (!this.hoveredCell) return;
+        listener(this.hoveredCell);
+      });
     });
   }
 
@@ -59,6 +58,7 @@ export class Grid extends GameObject<TestScene> {
     this.rows.forEach((row) => {
       const rowY = row.vStart - 0.5;
 
+      // horizontal lines
       this.preRenderer.drawLine({
         start: {
           x: 0,
@@ -76,6 +76,7 @@ export class Grid extends GameObject<TestScene> {
         row.cells.forEach((cell) => {
           const cellX = cell.pos.x - 0.5;
 
+          // vertical lines
           this.preRenderer.drawLine({
             start: { x: cellX, y: 0 },
             end: { x: cellX, y: this.size.height },
@@ -110,15 +111,17 @@ export class Grid extends GameObject<TestScene> {
 
     if (!this.playerHoveredCells.length) return;
 
-    const os = this.playerHoveredCells
-      .map((cell) => this.scene.map.itemsRegirsty[cell?.index ?? -1])
-      .filter((o) => Boolean(o));
-    if (!os.length) return;
-    const o = os[0];
+    const cellsItems = this.playerHoveredCells
+      .map((cell) => this.scene.map.itemsRegistry.get(cell?.index ?? -1))
+      .filter((item) => Boolean(item));
 
-    if (this.emitedObject !== o) {
-      this.emitedObject = o;
-      this.scene.player.setHoveredObject(o);
+    if (!cellsItems.length) return;
+
+    const item = cellsItems[0];
+
+    if (this.emitedObject !== item) {
+      this.emitedObject = item;
+      this.scene.player.setHoveredObject(item);
     }
   }
 
@@ -163,8 +166,8 @@ export class Grid extends GameObject<TestScene> {
     this.hoveredCell = cell ?? null;
 
     if (this.hoveredCell) {
-      const o = this.scene.map.itemsRegirsty[this.hoveredCell.index];
-      this.hoveredObject = o ?? null;
+      const item = this.scene.map.itemsRegistry.get(this.hoveredCell.index);
+      this.hoveredObject = item ?? null;
     }
   }
 
@@ -230,9 +233,9 @@ export class Grid extends GameObject<TestScene> {
         //   color: "rgba(255, 0, 0, 0.3)",
         // });
 
-        const o = this.scene.map.itemsRegirsty[cell.index];
+        const item = this.scene.map.itemsRegistry.get(cell.index);
 
-        if (o) {
+        if (item) {
           this.scene.renderer.strokeRect({
             pos: {
               x: cell.pos.x + this.scene.camera.pos.x,

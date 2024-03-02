@@ -11,36 +11,35 @@ import { Stone } from "../game-items/Stone";
 import { Direction } from "./Camera";
 import { Grid } from "./Grid";
 
-export class Map extends GameObject<TestScene> {
+export class GameMap extends GameObject<TestScene> {
   public pos = new Position();
-  public size: Size;
+  public size: Size = globalState.get("chunkSize");
   public grid: Grid;
 
-  private preRenderer = new Renderer({ size: globalState.get("chunkSize") });
+  private preRenderer = new Renderer({ size: this.size });
 
   private collidersRenderer = new Renderer({
-    size: globalState.get("chunkSize"),
+    size: this.size,
   });
   private collidersData: Uint8ClampedArray | null = null;
   private colliders: Collider[] = [];
   private isRenderColliders = false;
 
-  public itemsRegirsty: Record<number, GameItem> = {};
+  public itemsRegistry: Map<number, GameItem> = new Map();
   private itemsRenderer = new Renderer({
-    size: globalState.get("chunkSize"),
+    size: this.size,
   });
 
   constructor(scene: TestScene) {
     super({ scene, imgAssetId: "tiles" });
 
-    this.size = globalState.get("chunkSize");
     this.grid = new Grid(scene, this.size);
 
     this.preRender();
     this.alignCamera();
 
     this.grid.onCellClick((cell) => {
-      const obj = this.itemsRegirsty[cell.index];
+      const obj = this.itemsRegistry.get(cell.index);
       if (!obj) return;
     });
   }
@@ -48,6 +47,7 @@ export class Map extends GameObject<TestScene> {
   private alignCamera(): void {
     if (this.size.width < this.scene.camera.size.width) {
       const x = (this.scene.camera.size.width - this.size.width) / 2;
+
       this.scene.camera.setPos({
         ...this.scene.camera.pos,
         x,
@@ -56,7 +56,7 @@ export class Map extends GameObject<TestScene> {
   }
 
   private preRender(): void {
-    this.preRenderMap();
+    this.renderMap();
 
     this.initItems();
     this.renderItems();
@@ -121,7 +121,7 @@ export class Map extends GameObject<TestScene> {
 
         if (!item) return;
 
-        this.itemsRegirsty[cell.index] = item;
+        this.itemsRegistry.set(cell.index, item);
         this.colliders.push(item.collider);
       });
     });
@@ -137,7 +137,7 @@ export class Map extends GameObject<TestScene> {
     const { Bush, Stone, Chop } = GameItemType;
 
     this.itemsRenderer.clear();
-    Object.values(this.itemsRegirsty).forEach((item) => {
+    this.itemsRegistry.forEach((item) => {
       const dx = item.pos.x;
       const dy = item.pos.y;
 
@@ -169,7 +169,7 @@ export class Map extends GameObject<TestScene> {
     });
   }
 
-  private preRenderMap(): void {
+  private renderMap(): void {
     const layersData = globalState.get("mapLayers");
     const mapLayer = layersData.find((layer: any) => layer.name === "map");
     const cellSize = globalState.get("cellSize");
@@ -223,7 +223,7 @@ export class Map extends GameObject<TestScene> {
   }
 
   public removeItem(item: GameItem): void {
-    delete this.itemsRegirsty[item.cellIndex];
+    this.itemsRegistry.delete(item.cellIndex);
     this.colliders = this.colliders.filter((i) => i.parentId !== item.id);
     this.renderItems();
     this.renderBoundaries();
@@ -241,11 +241,10 @@ export class Map extends GameObject<TestScene> {
   private getBoundariesData(pos: Position) {
     if (!this.collidersData) return;
 
-    const chunkWidth = globalState.get("chunkSize").width;
     const { x, y } = pos;
     const r =
       this.collidersData[
-        (chunkWidth * (y - this.scene.camera.pos.y) +
+        (this.size.width * (y - this.scene.camera.pos.y) +
           (x - this.scene.camera.pos.x)) *
           4
       ];
@@ -358,26 +357,30 @@ export class Map extends GameObject<TestScene> {
   }
 
   public render(): void {
-    this.renderMap();
-    if (this.isRenderColliders) {
-      this.drawBoundaries();
-    }
+    this.drawMap();
+    this.drawItems();
+    this.drawColliders();
+
     this.grid.render();
   }
 
-  private renderMap(): void {
+  private drawMap(): void {
     this.scene.renderer.drawImg({
       img: this.preRenderer.canvas,
       pos: this.scene.camera.pos,
     });
+  }
 
+  private drawItems(): void {
     this.scene.renderer.drawImg({
       img: this.itemsRenderer.canvas,
       pos: this.scene.camera.pos,
     });
   }
 
-  private drawBoundaries(): void {
+  private drawColliders(): void {
+    if (!this.isRenderColliders) return;
+
     this.scene.renderer.drawImg({
       img: this.collidersRenderer.canvas,
       pos: this.scene.camera.pos,
