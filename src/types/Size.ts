@@ -1,4 +1,4 @@
-export type Size = {
-  width: number;
-  height: number;
-};
+export class Size {
+  public width = 0;
+  public height = 0;
+}

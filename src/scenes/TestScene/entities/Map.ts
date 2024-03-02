@@ -4,6 +4,10 @@ import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { globalState } from "../../../state";
 import { Position, Size } from "../../../types";
+import { Bush } from "../game-items/Bush";
+import { Chop } from "../game-items/Chop";
+import { Collider, GameItem, GameItemType } from "../game-items/GameItem";
+import { Stone } from "../game-items/Stone";
 import { Direction } from "./Camera";
 import { Grid } from "./Grid";
 
@@ -13,13 +17,18 @@ export class Map extends GameObject<TestScene> {
   public grid: Grid;
 
   private preRenderer = new Renderer({ size: globalState.get("chunkSize") });
-  private boundariesPreRenderer = new Renderer({
+
+  private collidersRenderer = new Renderer({
     size: globalState.get("chunkSize"),
   });
-  private boundariesData: Uint8ClampedArray | null = null;
-  private boundaries: { pos: Position; size: Size; offset: Position }[] = [];
-  private isRenderBoundaries = false;
-  public objectsRegirsty: Record<number, any> = {};
+  private collidersData: Uint8ClampedArray | null = null;
+  private colliders: Collider[] = [];
+  private isRenderColliders = false;
+
+  public itemsRegirsty: Record<number, GameItem> = {};
+  private itemsRenderer = new Renderer({
+    size: globalState.get("chunkSize"),
+  });
 
   constructor(scene: TestScene) {
     super({ scene, imgAssetId: "tiles" });
@@ -31,9 +40,8 @@ export class Map extends GameObject<TestScene> {
     this.alignCamera();
 
     this.grid.onCellClick((cell) => {
-      const obj = this.objectsRegirsty[cell.index];
+      const obj = this.itemsRegirsty[cell.index];
       if (!obj) return;
-      console.log(obj.name, obj);
     });
   }
 
@@ -49,94 +57,105 @@ export class Map extends GameObject<TestScene> {
 
   private preRender(): void {
     this.preRenderMap();
-    this.preRenderObjects();
-    this.preRenderBoundaries();
+
+    this.initItems();
+    this.renderItems();
+
+    this.renderBoundaries();
   }
 
-  private preRenderBoundaries(): void {
-    const layersData = globalState.get("mapLayers");
-    const layer = layersData.find((layer: any) => layer.name === "colliders");
+  private renderBoundaries(): void {
+    this.collidersRenderer.clear();
 
-    layer.objects.forEach((obj: any) => {
-      const pos = {
-        x: obj.x < 0 ? 0 : Math.floor(obj.x),
-        y: obj.y < 0 ? 0 : Math.floor(obj.y),
-      };
-
-      this.boundaries.push({
-        pos,
-        size: {
-          width: Math.floor(obj.width),
-          height: Math.floor(obj.height),
-        },
-        offset: pos,
-      });
-    });
-
-    this.boundaries.forEach((boundary) => {
-      this.boundariesPreRenderer.fillRect({
+    this.colliders.forEach((boundary) => {
+      this.collidersRenderer.fillRect({
         pos: boundary.pos,
         size: boundary.size,
         color: "rgb(255, 0, 0)",
       });
     });
 
-    this.boundariesData = this.boundariesPreRenderer.TMPctx.getImageData(
+    this.collidersData = this.collidersRenderer.TMPctx.getImageData(
       0,
       0,
-      this.boundariesPreRenderer.width,
-      this.boundariesPreRenderer.height,
+      this.collidersRenderer.width,
+      this.collidersRenderer.height,
     ).data;
   }
 
-  private preRenderObjects(): void {
+  private initItems(): void {
     const layersData = globalState.get("mapLayers");
-    const objectsLayer = layersData.find(
+    const layer = layersData.find(
       (layer: any) => layer.name === "objects",
-    );
+    ).data;
+    const gridRows = this.grid.rows;
+
+    gridRows.forEach((row) => {
+      row.cells.forEach((cell) => {
+        const tileCode = layer[cell.index];
+
+        if (tileCode === 0) return;
+
+        let item: GameItem | null = null;
+
+        if (tileCode === 325) {
+          item = new Stone({
+            pos: cell.pos,
+            cellIndex: cell.index,
+          });
+        }
+
+        if (tileCode === 326) {
+          item = new Bush({
+            pos: cell.pos,
+            cellIndex: cell.index,
+          });
+        }
+
+        if (tileCode === 327) {
+          item = new Chop({
+            pos: cell.pos,
+            cellIndex: cell.index,
+          });
+        }
+
+        if (!item) return;
+
+        this.itemsRegirsty[cell.index] = item;
+        this.colliders.push(item.collider);
+      });
+    });
+  }
+
+  private renderItems(): void {
     const cellSize = globalState.get("cellSize");
     const img = document.querySelector<HTMLImageElement>("#tiles2")!;
-    const gridCells = this.grid.rows.flatMap((row) => row.cells);
 
-    gridCells.forEach((cell, index) => {
-      let sx = 0;
-      const sy = 2 * cellSize;
+    let sx = 0;
+    const sy = 2 * cellSize;
 
-      const dx = cell.pos.x;
-      const dy = cell.pos.y;
+    const { Bush, Stone, Chop } = GameItemType;
 
-      const tileCode = objectsLayer.data[index];
+    this.itemsRenderer.clear();
+    Object.values(this.itemsRegirsty).forEach((item) => {
+      const dx = item.pos.x;
+      const dy = item.pos.y;
 
-      if (tileCode === 0) return;
+      switch (item.type) {
+        case Bush:
+          sx = cellSize;
+          break;
 
-      if (tileCode === 325) {
-        // stone
-        sx = 0;
-        this.objectsRegirsty[index] = {
-          pos: cell.pos,
-          name: "stone",
-        };
+        case Stone:
+          sx = 0;
+          break;
+
+        case Chop:
+          sx = 2 * cellSize;
+          break;
       }
 
-      if (tileCode === 326) {
-        // bush
-        sx = cellSize;
-        this.objectsRegirsty[index] = {
-          pos: cell.pos,
-          name: "bush",
-        };
-      }
-
-      if (tileCode === 327) {
-        // chop
-        sx = 2 * cellSize;
-        this.objectsRegirsty[index] = {
-          pos: cell.pos,
-          name: "chop",
-        };
-      }
-
-      this.preRenderer.TMPctx.drawImage(
+      this.itemsRenderer.TMPctx.drawImage(
         img,
         sx,
         sy,
@@ -184,7 +203,9 @@ export class Map extends GameObject<TestScene> {
 
       if (tileCode === 308) {
         // dirt
-        sx = 3 * cellSize;
+        // sx = 3 * cellSize;
+        // grass
+        sx = 0;
       }
 
       this.preRenderer.TMPctx.drawImage(
@@ -201,18 +222,16 @@ export class Map extends GameObject<TestScene> {
     });
   }
 
-  public pushBoundary(b: {
-    pos: Position;
-    size: Size;
-    offset: Position;
-  }): void {
-    this.boundaries.push(b);
-    this.preRenderBoundaries();
+  public removeItem(item: GameItem): void {
+    delete this.itemsRegirsty[item.cellIndex];
+    this.colliders = this.colliders.filter((i) => i.parentId !== item.id);
+    this.renderItems();
+    this.renderBoundaries();
   }
 
   public update(): void {
-    if (Keyboard.isKeyClicked(KeyboardKeyCode.J)) {
-      this.isRenderBoundaries = !this.isRenderBoundaries;
+    if (Keyboard.isKeyClicked(KeyboardKeyCode.U)) {
+      this.isRenderColliders = !this.isRenderColliders;
     }
 
     this.grid.update();
@@ -220,12 +239,12 @@ export class Map extends GameObject<TestScene> {
   }
 
   private getBoundariesData(pos: Position) {
-    if (!this.boundariesData) return;
+    if (!this.collidersData) return;
 
     const chunkWidth = globalState.get("chunkSize").width;
     const { x, y } = pos;
     const r =
-      this.boundariesData[
+      this.collidersData[
         (chunkWidth * (y - this.scene.camera.pos.y) +
           (x - this.scene.camera.pos.x)) *
           4
@@ -274,12 +293,12 @@ export class Map extends GameObject<TestScene> {
     const isCollision = this.isBoundaryCollision(player.collider);
     if (!isCollision) return;
 
-    const boundary = this.boundaries.find((boundary) => {
+    const boundary = this.colliders.find((boundary) => {
       return this.rectCollision(
         {
           pos: {
-            x: camera.pos.x + boundary.offset.x,
-            y: camera.pos.y + boundary.offset.y,
+            x: camera.pos.x + boundary.pos.x,
+            y: camera.pos.y + boundary.pos.y,
           },
           size: boundary.size,
         },
@@ -294,7 +313,7 @@ export class Map extends GameObject<TestScene> {
     switch (camera.direction) {
       case Left: {
         const x =
-          player.collider.pos.x - (boundary.offset.x + boundary.size.width);
+          player.collider.pos.x - (boundary.pos.x + boundary.size.width);
         camera.setPos({
           ...camera.pos,
           x,
@@ -305,9 +324,7 @@ export class Map extends GameObject<TestScene> {
 
       case Right: {
         const x =
-          player.collider.pos.x +
-          player.collider.size.width -
-          boundary.offset.x;
+          player.collider.pos.x + player.collider.size.width - boundary.pos.x;
         camera.setPos({
           ...camera.pos,
           x,
@@ -318,7 +335,7 @@ export class Map extends GameObject<TestScene> {
 
       case Top: {
         const y =
-          player.collider.pos.y - (boundary.offset.y + boundary.size.height);
+          player.collider.pos.y - (boundary.pos.y + boundary.size.height);
         camera.setPos({
           ...camera.pos,
           y,
@@ -329,9 +346,7 @@ export class Map extends GameObject<TestScene> {
 
       case Bottom: {
         const y =
-          player.collider.pos.y +
-          player.collider.size.height -
-          boundary.offset.y;
+          player.collider.pos.y + player.collider.size.height - boundary.pos.y;
         camera.setPos({
           ...camera.pos,
           y,
@@ -344,8 +359,8 @@ export class Map extends GameObject<TestScene> {
 
   public render(): void {
     this.renderMap();
-    if (this.isRenderBoundaries) {
-      this.renderBoundaries();
+    if (this.isRenderColliders) {
+      this.drawBoundaries();
     }
     this.grid.render();
   }
@@ -355,11 +370,16 @@ export class Map extends GameObject<TestScene> {
       img: this.preRenderer.canvas,
       pos: this.scene.camera.pos,
     });
+
+    this.scene.renderer.drawImg({
+      img: this.itemsRenderer.canvas,
+      pos: this.scene.camera.pos,
+    });
   }
 
-  private renderBoundaries(): void {
+  private drawBoundaries(): void {
     this.scene.renderer.drawImg({
-      img: this.boundariesPreRenderer.canvas,
+      img: this.collidersRenderer.canvas,
       pos: this.scene.camera.pos,
     });
   }

@@ -71,22 +71,24 @@ export class Grid extends GameObject<TestScene> {
         lineWidth,
         color,
       });
-    });
 
-    this.rows[0].cells.forEach((cell) => {
-      const cellX = cell.pos.x - 0.5;
+      if (row.index === 0) {
+        row.cells.forEach((cell) => {
+          const cellX = cell.pos.x - 0.5;
 
-      this.preRenderer.drawLine({
-        start: { x: cellX, y: 0 },
-        end: { x: cellX, y: this.size.height },
-        lineWidth,
-        color,
-      });
+          this.preRenderer.drawLine({
+            start: { x: cellX, y: 0 },
+            end: { x: cellX, y: this.size.height },
+            lineWidth,
+            color,
+          });
+        });
+      }
     });
   }
 
   public update(): void {
-    if (Keyboard.isKeyClicked(KeyboardKeyCode.F)) {
+    if (Keyboard.isKeyClicked(KeyboardKeyCode.G)) {
       this.isRender = !this.isRender;
     }
 
@@ -109,14 +111,14 @@ export class Grid extends GameObject<TestScene> {
     if (!this.playerHoveredCells.length) return;
 
     const os = this.playerHoveredCells
-      .map((cell) => this.scene.map.objectsRegirsty[cell?.index ?? -1])
+      .map((cell) => this.scene.map.itemsRegirsty[cell?.index ?? -1])
       .filter((o) => Boolean(o));
     if (!os.length) return;
     const o = os[0];
 
     if (this.emitedObject !== o) {
       this.emitedObject = o;
-      console.log(o);
+      this.scene.player.setHoveredObject(o);
     }
   }
 
@@ -161,7 +163,7 @@ export class Grid extends GameObject<TestScene> {
     this.hoveredCell = cell ?? null;
 
     if (this.hoveredCell) {
-      const o = this.scene.map.objectsRegirsty[this.hoveredCell.index];
+      const o = this.scene.map.itemsRegirsty[this.hoveredCell.index];
       this.hoveredObject = o ?? null;
     }
   }
@@ -228,7 +230,7 @@ export class Grid extends GameObject<TestScene> {
         //   color: "rgba(255, 0, 0, 0.3)",
         // });
 
-        const o = this.scene.map.objectsRegirsty[cell.index];
+        const o = this.scene.map.itemsRegirsty[cell.index];
 
         if (o) {
           this.scene.renderer.strokeRect({

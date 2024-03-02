@@ -14,6 +14,7 @@ export class Player extends GameObject<TestScene> {
     },
   };
   private isRenderCollider = false;
+  private hoveredObject: any | null = null;
 
   public size: Size = {
     width: 16,
@@ -35,9 +36,21 @@ export class Player extends GameObject<TestScene> {
   }
 
   public update(): void {
-    if (Keyboard.isKeyClicked(KeyboardKeyCode.K)) {
+    if (Keyboard.isKeyClicked(KeyboardKeyCode.I)) {
       this.isRenderCollider = !this.isRenderCollider;
     }
+
+    if (Keyboard.isKeyClicked(KeyboardKeyCode.J)) {
+      if (this.hoveredObject) {
+        this.scene.map.removeItem(this.hoveredObject);
+        this.hoveredObject = null;
+      }
+    }
+  }
+
+  public setHoveredObject(obj: any): void {
+    this.hoveredObject = obj;
+    console.log(this.hoveredObject);
   }
 
   public render(): void {

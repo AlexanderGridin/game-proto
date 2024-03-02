@@ -64,8 +64,6 @@ export class Renderer {
     color = "#000",
     lineWidth = 1,
   }: DrawLineConfig): void {
-    // this.renderingCtx.save();
-
     this.renderingCtx.lineWidth = lineWidth;
     this.renderingCtx.strokeStyle = color;
 
@@ -75,26 +73,16 @@ export class Renderer {
     this.renderingCtx.lineTo(end.x, end.y);
 
     this.renderingCtx.stroke();
-
-    // this.renderingCtx.restore();
   }
 
   public fillRect({ pos, size, color = "#000" }: DrawRectConfig) {
-    // this.renderingCtx.save();
-
     this.renderingCtx.fillStyle = color;
     this.renderingCtx.fillRect(pos.x, pos.y, size.width, size.height);
-
-    // this.renderingCtx.restore();
   }
 
   public strokeRect({ pos, size, color = "#000" }: DrawRectConfig) {
-    // this.renderingCtx.save();
-
     this.renderingCtx.strokeStyle = color;
     this.renderingCtx.strokeRect(pos.x, pos.y, size.width, size.height);
-
-    // this.renderingCtx.restore();
   }
 
   public drawImg({ img, pos }: DrawImgconfig): void {

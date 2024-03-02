@@ -20,6 +20,7 @@ export const initGrid = ({ size, cellSize }: InitGridConfig): GridRow[] => {
       vStart,
       vEnd: vStart + cellSize,
       cells: [],
+      index: r,
     });
 
     for (let c = 0; c < cols; c++) {
@@ -34,6 +35,7 @@ export const initGrid = ({ size, cellSize }: InitGridConfig): GridRow[] => {
           height: cellSize,
         },
         index: index++,
+        indexInRow: c,
         rowIndex: r,
       });
     }
