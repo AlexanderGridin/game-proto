@@ -30,9 +30,16 @@ body {
   margin: 0;
 }
 
+.game-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
 #game {
   background-color: black;
   display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .dev-buttons {
@@ -51,4 +58,32 @@ body {
 
 .dev-buttons button:not(:last-child) {
   margin-right: 7px;
+}
+
+.notifications {
+  max-width: 350px;
+  width: 100%;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+  background-color: #fff;
+}
+
+.notifications ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification ul li {
+  background-color: gray;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.notification ul li:not(:last-child) {
+  margin-bottom: 15px;
 }

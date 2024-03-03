@@ -1,10 +1,10 @@
 import { Scene } from "../../modules";
 import { Player } from "./entities/Player";
 import { GameMap } from "./entities/Map";
-// import { MousePointer } from "./entities/MousePointer";
+import { MousePointer } from "./entities/MousePointer";
 
 export class TestScene extends Scene {
-  // public cursor = new MousePointer(this);
+  public cursor = new MousePointer(this);
   public map = new GameMap(this);
   public player = new Player(this);
 
@@ -13,12 +13,12 @@ export class TestScene extends Scene {
     // TODO: update this, so the order needs to be not important
     this.player.update();
     this.map.update();
-    // this.cursor.update();
+    this.cursor.update();
   }
 
   protected render(): void {
     this.map.render();
     this.player.render();
-    // this.cursor.render();
+    this.cursor.render();
   }
 }

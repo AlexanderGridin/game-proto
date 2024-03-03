@@ -2,6 +2,7 @@ import { GameObject } from "../../../modules";
 import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { Position, Size } from "../../../types";
+import { UI } from "../../../ui";
 import { TestScene } from "../TestScene";
 import { Collider, GameItem } from "../game-items/GameItem";
 import { Direction } from "./Camera";
@@ -116,12 +117,12 @@ export class Player extends GameObject<TestScene> {
     if (!this.hoveredItem) return;
 
     this.scene.map.removeItem(this.hoveredItem);
+    UI.notifications.push(`Picked item: ${this.hoveredItem.type}`);
     this.hoveredItem = null;
   }
 
-  public setHoveredObject(obj: any): void {
-    this.hoveredItem = obj;
-    console.log(this.hoveredItem);
+  public setHoveredItem(item: GameItem | null): void {
+    this.hoveredItem = item;
   }
 
   public render(): void {

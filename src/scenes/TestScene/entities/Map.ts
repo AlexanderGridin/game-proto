@@ -10,6 +10,7 @@ import { Collider, GameItem, GameItemType } from "../game-items/GameItem";
 import { Stone } from "../game-items/Stone";
 import { Direction } from "./Camera";
 import { Grid } from "./Grid";
+import { ItemsProgress } from "./ItemsProgress";
 
 export class GameMap extends GameObject<TestScene> {
   public pos = new Position();
@@ -30,6 +31,8 @@ export class GameMap extends GameObject<TestScene> {
     size: this.size,
   });
 
+  private progress: ItemsProgress;
+
   constructor(scene: TestScene) {
     super({ scene, imgAssetId: "tiles" });
 
@@ -37,6 +40,8 @@ export class GameMap extends GameObject<TestScene> {
 
     this.preRender();
     this.alignCamera();
+
+    this.progress = new ItemsProgress(this.scene, this.itemsRegistry.size);
 
     this.grid.onCellClick((cell) => {
       const obj = this.itemsRegistry.get(cell.index);
@@ -239,6 +244,7 @@ export class GameMap extends GameObject<TestScene> {
     }
 
     this.grid.update();
+    this.progress.update(this.itemsRegistry.size);
     this.checkCollisionWithPlayer();
   }
 
@@ -379,6 +385,7 @@ export class GameMap extends GameObject<TestScene> {
     this.drawColliders();
 
     this.grid.render();
+    this.progress.render();
   }
 
   private drawMap(): void {

@@ -117,13 +117,17 @@ export class Grid extends GameObject<TestScene> {
       .map((cell) => this.scene.map.itemsRegistry.get(cell?.index ?? -1))
       .filter((item) => Boolean(item));
 
-    if (!cellsItems.length) return;
+    if (!cellsItems.length) {
+      this.emitedObject = null;
+      this.scene.player.setHoveredItem(null);
+      return;
+    }
 
     const item = cellsItems[0];
 
-    if (this.emitedObject !== item) {
+    if (item && this.emitedObject !== item) {
       this.emitedObject = item;
-      this.scene.player.setHoveredObject(item);
+      this.scene.player.setHoveredItem(item);
     }
   }
 
