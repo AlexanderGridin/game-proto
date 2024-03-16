@@ -10,8 +10,8 @@ import { Direction } from "./Camera";
 export class Player extends GameObject<TestScene> {
   public pos: Position = new Position();
   public size: Size = {
-    width: 16,
-    height: 32,
+    width: 34,
+    height: 63,
   };
 
   public direction: Direction | null = null;
@@ -21,7 +21,7 @@ export class Player extends GameObject<TestScene> {
     pos: new Position(),
     size: {
       width: 8,
-      height: 8,
+      height: 16,
     },
     relativePos: new Position(),
     parentId: "player",
@@ -126,12 +126,7 @@ export class Player extends GameObject<TestScene> {
   }
 
   public render(): void {
-    this.scene.renderer.TMPctx.fillStyle = "black";
-    this.scene.renderer.TMPctx.fillText(
-      `x: ${this.pos.x - this.scene.camera.offset.x}; y: ${this.pos.y - this.scene.camera.offset.y}`,
-      this.pos.x - 22,
-      this.pos.y - 5,
-    );
+    this.drawPosText();
 
     if (this.imgAsset) {
       this.scene.renderer.drawImg({
@@ -147,5 +142,14 @@ export class Player extends GameObject<TestScene> {
         color: "red",
       });
     }
+  }
+
+  private drawPosText(): void {
+    this.scene.renderer.TMPctx.fillStyle = "black";
+    this.scene.renderer.TMPctx.fillText(
+      `x: ${this.pos.x - this.scene.camera.offset.x}; y: ${this.pos.y - this.scene.camera.offset.y}`,
+      this.pos.x - 22,
+      this.pos.y - 5,
+    );
   }
 }
