@@ -1,11 +1,9 @@
-import { Collider, GameItem, GameItemConfig, GameItemType } from "./GameItem";
+import { Collider } from "../../../modules";
+import { GameItem, GameItemConfig, GameItemType } from "./GameItem";
 
 export class Stone extends GameItem {
   public type: GameItemType = GameItemType.Stone;
-  public collider: Collider = {
-    ...new Collider(),
-    parentId: this.id,
-  };
+  public collider = new Collider<Stone>(this);
 
   constructor(config: GameItemConfig) {
     super(config);
@@ -13,16 +11,11 @@ export class Stone extends GameItem {
   }
 
   private initCollider(): void {
-    this.collider.relativePos = {
-      x: 2,
-      y: 5,
-    };
+    this.collider.setRelativePos(2, 5);
 
     this.collider.size = {
       width: this.size.width - 4,
       height: this.size.height - 13,
     };
-
-    this.initColliderPos();
   }
 }

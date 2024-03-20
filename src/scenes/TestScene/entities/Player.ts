@@ -1,13 +1,15 @@
-import { GameObject } from "../../../modules";
+import { Collider, GameObject, Img } from "../../../modules";
 import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { Position, Size } from "../../../types";
 import { UI } from "../../../ui";
 import { TestScene } from "../TestScene";
-import { Collider, GameItem } from "../game-items/GameItem";
+import { isBush } from "../game-items";
+import { GameItem } from "../game-items/GameItem";
 import { Direction } from "./Camera";
 
 export class Player extends GameObject<TestScene> {
+  private img = new Img("#player2");
   public pos: Position = new Position();
   public size: Size = {
     width: 34,
@@ -17,42 +19,33 @@ export class Player extends GameObject<TestScene> {
   public direction: Direction | null = null;
   public speed = 2;
 
-  public collider: Collider = {
-    pos: new Position(),
-    size: {
-      width: 8,
-      height: 16,
-    },
-    relativePos: new Position(),
-    parentId: "player",
-  };
+  public collider = new Collider(this);
 
   private isRenderCollider = false;
   private hoveredItem: GameItem | null = null;
 
   constructor(scene: TestScene) {
-    super({ scene, imgAssetId: "player2" });
+    super({ scene });
 
-    this.scene.camera.follow(this);
-    this.updateColliderPos();
-  }
-
-  public updatePos(pos: Position): void {
-    this.pos = {
-      ...pos,
+    this.collider.size = {
+      width: 8,
+      height: 16,
     };
 
-    this.updateColliderPos();
+    this.pos.onChange(() => {
+      this.updateColliderPos();
+    });
+
+    this.scene.camera.follow(this);
   }
 
   private updateColliderPos(): void {
     const xOffset = this.size.width - this.collider.size.width;
     const yOffset = this.size.height - this.collider.size.height;
 
-    this.collider.pos = {
-      x: this.pos.x + xOffset / 2,
-      y: this.pos.y + yOffset,
-    };
+    const x = this.pos.x + xOffset / 2;
+    const y = this.pos.y + yOffset;
+    this.collider.pos.set(x, y);
   }
 
   public update(): void {
@@ -80,29 +73,25 @@ export class Player extends GameObject<TestScene> {
   private move(speed: number): void {
     if (Keyboard.isKeyPressed(KeyboardKeyCode.S)) {
       this.direction = Direction.Bottom;
-      this.pos.y += speed;
-      this.updateColliderPos();
+      this.pos.setY(this.pos.y + speed);
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.W)) {
       this.direction = Direction.Top;
-      this.pos.y -= speed;
-      this.updateColliderPos();
+      this.pos.setY(this.pos.y - speed);
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.A)) {
       this.direction = Direction.Left;
-      this.pos.x -= speed;
-      this.updateColliderPos();
+      this.pos.setX(this.pos.x - speed);
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.D)) {
       this.direction = Direction.Right;
-      this.pos.x += speed;
-      this.updateColliderPos();
+      this.pos.setX(this.pos.x + speed);
       return;
     }
 
@@ -116,6 +105,17 @@ export class Player extends GameObject<TestScene> {
   private handlePickItem(): void {
     if (!this.hoveredItem) return;
 
+    if (isBush(this.hoveredItem)) {
+      if (!this.hoveredItem.withBerries) return;
+
+      this.hoveredItem.withBerries = false;
+      UI.notifications.push(`Picked item: ${this.hoveredItem.type} berries`);
+      this.hoveredItem = null;
+      this.scene.map.renderItems();
+
+      return;
+    }
+
     this.scene.map.removeItem(this.hoveredItem);
     UI.notifications.push(`Picked item: ${this.hoveredItem.type}`);
     this.hoveredItem = null;
@@ -128,9 +128,9 @@ export class Player extends GameObject<TestScene> {
   public render(): void {
     this.drawPosText();
 
-    if (this.imgAsset) {
+    if (this.img) {
       this.scene.renderer.drawImg({
-        img: this.imgAsset,
+        img: this.img.element,
         pos: this.pos,
       });
     }
@@ -145,7 +145,7 @@ export class Player extends GameObject<TestScene> {
   }
 
   private drawPosText(): void {
-    this.scene.renderer.TMPctx.fillStyle = "black";
+    this.scene.renderer.TMPctx.fillStyle = "white";
     this.scene.renderer.TMPctx.fillText(
       `x: ${this.pos.x - this.scene.camera.offset.x}; y: ${this.pos.y - this.scene.camera.offset.y}`,
       this.pos.x - 22,

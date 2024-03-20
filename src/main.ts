@@ -28,7 +28,6 @@ window.addEventListener("load", async () => {
   const res = await fetch("/assets/tiles/map.json");
   const data = await res.json();
   globalState.set("mapLayers", data.layers);
-  console.log(data.layers);
 
   const mainRenderer = new Renderer({ canvasId: "#game" });
   const testScene = new TestScene(mainRenderer);

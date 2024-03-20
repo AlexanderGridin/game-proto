@@ -1,22 +1,22 @@
 import { globalState } from "../state";
-import { Position, Size } from "../types";
+import { Position, PositionData, Size } from "../types";
 
 export type DrawLineConfig = {
-  start: Position;
-  end: Position;
+  start: Position | PositionData;
+  end: Position | PositionData;
   color?: string;
   lineWidth?: number;
 };
 
 export type DrawRectConfig = {
-  pos: Position;
+  pos: Position | PositionData;
   size: Size;
   color?: string;
 };
 
 export type DrawImgconfig = {
   img: HTMLImageElement | HTMLCanvasElement;
-  pos: Position;
+  pos: Position | PositionData;
 };
 
 export class Renderer {

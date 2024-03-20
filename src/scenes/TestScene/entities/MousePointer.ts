@@ -23,7 +23,7 @@ export class MousePointer extends GameObject<TestScene> {
     });
 
     this.scene.renderer.TMPctx.font = "16px Arial";
-    this.scene.renderer.TMPctx.fillStyle = "black"; // Fill color
+    this.scene.renderer.TMPctx.fillStyle = "white"; // Fill color
     this.scene.renderer.TMPctx.fillText(
       `x: ${this.pos.x}, y: ${this.pos.y}`,
       this.pos.x,

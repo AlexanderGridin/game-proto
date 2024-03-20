@@ -1,16 +1,19 @@
 import { TestScene } from "..";
-import { GameObject, Renderer } from "../../../modules";
+import { Collider, GameObject, Renderer, SpriteSheet } from "../../../modules";
 import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { globalState } from "../../../state";
-import { Position, Size } from "../../../types";
-import { Bush } from "../game-items/Bush";
-import { Chop } from "../game-items/Chop";
-import { Collider, GameItem, GameItemType } from "../game-items/GameItem";
-import { Stone } from "../game-items/Stone";
+import { Position, PositionData, Size } from "../../../types";
+import {
+  getItemForMapCell,
+  getItemSpriteFrame,
+  getMapSpriteFrameByCode,
+} from "../../../utils";
+import { GameItem } from "../game-items/GameItem";
 import { Direction } from "./Camera";
 import { Grid } from "./Grid";
 import { ItemsProgress } from "./ItemsProgress";
+import { Player } from "./Player";
 
 export class GameMap extends GameObject<TestScene> {
   public pos = new Position();
@@ -23,7 +26,7 @@ export class GameMap extends GameObject<TestScene> {
     size: this.size,
   });
   private collidersData: Uint8ClampedArray | null = null;
-  private colliders: Collider[] = [];
+  private colliders: (Collider<GameItem> | Collider)[] = [];
   private isRenderColliders = false;
 
   public itemsRegistry: Map<number, GameItem> = new Map();
@@ -33,8 +36,14 @@ export class GameMap extends GameObject<TestScene> {
 
   private progress: ItemsProgress;
 
+  private cellSize = globalState.get("cellSize");
+  private spriteSheet = new SpriteSheet({
+    imgSelector: "#tiles2",
+    frameSize: { width: this.cellSize, height: this.cellSize },
+  });
+
   constructor(scene: TestScene) {
-    super({ scene, imgAssetId: "tiles" });
+    super({ scene });
 
     this.grid = new Grid(scene, this.size);
 
@@ -53,10 +62,9 @@ export class GameMap extends GameObject<TestScene> {
     if (this.size.width < this.scene.camera.size.width) {
       const x = (this.scene.camera.size.width - this.size.width) / 2;
 
-      this.scene.camera.setPos({
-        ...this.scene.camera.pos,
-        x: -x,
-      });
+      const xPos = -x;
+      const yPos = this.scene.camera.pos.y;
+      this.scene.camera.pos.set(xPos, yPos);
     }
   }
 
@@ -66,7 +74,31 @@ export class GameMap extends GameObject<TestScene> {
     this.initItems();
     this.renderItems();
 
+    this.initMapBoundaries();
     this.renderBoundaries();
+  }
+
+  private initMapBoundaries(): void {
+    const layersData = globalState.get("mapLayers");
+    const colliders = layersData.find(
+      (layer: any) => layer.name === "colliders",
+    ).objects;
+
+    for (let collider of colliders) {
+      const newCollider = new Collider();
+      const x = Math.trunc(Math.abs(collider.x));
+      const y = Math.trunc(Math.abs(collider.y));
+      newCollider.pos.set(x, y);
+
+      const width = Math.trunc(collider.width);
+      const height = Math.trunc(collider.height);
+      newCollider.size = {
+        width,
+        height,
+      };
+
+      this.colliders.push(newCollider);
+    }
   }
 
   private renderBoundaries(): void {
@@ -99,31 +131,7 @@ export class GameMap extends GameObject<TestScene> {
       row.cells.forEach((cell) => {
         const tileCode = layer[cell.index];
 
-        if (tileCode === 0) return;
-
-        let item: GameItem | null = null;
-
-        if (tileCode === 325) {
-          item = new Stone({
-            pos: cell.pos,
-            cellIndex: cell.index,
-          });
-        }
-
-        if (tileCode === 326) {
-          item = new Bush({
-            pos: cell.pos,
-            cellIndex: cell.index,
-          });
-        }
-
-        if (tileCode === 327) {
-          item = new Chop({
-            pos: cell.pos,
-            cellIndex: cell.index,
-          });
-        }
-
+        const item = getItemForMapCell(tileCode, cell);
         if (!item) return;
 
         this.itemsRegistry.set(cell.index, item);
@@ -132,44 +140,23 @@ export class GameMap extends GameObject<TestScene> {
     });
   }
 
-  private renderItems(): void {
-    const cellSize = globalState.get("cellSize");
-    const img = document.querySelector<HTMLImageElement>("#tiles2")!;
-
-    let sx = 0;
-    const sy = 2 * cellSize;
-
-    const { Bush, Stone, Chop } = GameItemType;
-
+  public renderItems(): void {
     this.itemsRenderer.clear();
     this.itemsRegistry.forEach((item) => {
-      const dx = item.pos.x;
-      const dy = item.pos.y;
+      const frameToRender = getItemSpriteFrame(item, this.spriteSheet);
 
-      switch (item.type) {
-        case Bush:
-          sx = cellSize;
-          break;
-
-        case Stone:
-          sx = 0;
-          break;
-
-        case Chop:
-          sx = 2 * cellSize;
-          break;
-      }
+      if (!frameToRender) return;
 
       this.itemsRenderer.TMPctx.drawImage(
-        img,
-        sx,
-        sy,
-        cellSize,
-        cellSize,
-        dx,
-        dy,
-        cellSize,
-        cellSize,
+        frameToRender.img,
+        frameToRender.pos.x,
+        frameToRender.pos.y,
+        frameToRender.size.width,
+        frameToRender.size.height,
+        item.pos.x,
+        item.pos.y,
+        item.size.width,
+        item.size.height,
       );
     });
   }
@@ -177,53 +164,24 @@ export class GameMap extends GameObject<TestScene> {
   private renderMap(): void {
     const layersData = globalState.get("mapLayers");
     const mapLayer = layersData.find((layer: any) => layer.name === "map");
-    const cellSize = globalState.get("cellSize");
-
-    const img = document.querySelector<HTMLImageElement>("#tiles2")!;
     const gridCells = this.grid.rows.flatMap((row) => row.cells);
 
     gridCells.forEach((cell, index) => {
-      let sx = 0;
-      const sy = 0;
-
-      const dx = cell.pos.x;
-      const dy = cell.pos.y;
-
       const tileCode = mapLayer.data[index];
+      const frameToRender = getMapSpriteFrameByCode(tileCode, this.spriteSheet);
 
-      if (tileCode === 305) {
-        // grass
-        sx = 0;
-      }
-
-      if (tileCode === 306) {
-        // grass2
-        sx = cellSize;
-      }
-
-      if (tileCode === 307) {
-        // water
-        sx = 2 * cellSize;
-      }
-
-      if (tileCode === 308) {
-        // replace dirt to grass
-        // dirt
-        // sx = 3 * cellSize;
-        // grass
-        sx = 0;
-      }
+      if (!frameToRender) return;
 
       this.preRenderer.TMPctx.drawImage(
-        img,
-        sx,
-        sy,
-        cellSize,
-        cellSize,
-        dx,
-        dy,
-        cellSize,
-        cellSize,
+        frameToRender.img,
+        frameToRender.pos.x,
+        frameToRender.pos.y,
+        frameToRender.size.width,
+        frameToRender.size.height,
+        cell.pos.x,
+        cell.pos.y,
+        cell.size.width,
+        cell.size.height,
       );
     });
   }
@@ -231,7 +189,7 @@ export class GameMap extends GameObject<TestScene> {
   public removeItem(item: GameItem): void {
     this.itemsRegistry.delete(item.cellIndex);
     this.colliders = this.colliders.filter(
-      (collider) => collider.parentId !== item.id,
+      (collider) => collider.parent?.id !== item.id,
     );
 
     this.renderItems();
@@ -248,8 +206,9 @@ export class GameMap extends GameObject<TestScene> {
     this.checkCollisionWithPlayer();
   }
 
-  private getBoundariesData(pos: Position) {
-    if (!this.collidersData) return;
+  private getBoundariesData(pos: PositionData) {
+    if (!this.collidersData) return false;
+
     const cameraOffset = this.scene.camera.offset;
 
     const { x, y } = pos;
@@ -261,53 +220,39 @@ export class GameMap extends GameObject<TestScene> {
     return r === 255;
   }
 
-  private rectCollision(
-    a: { pos: Position; size: Size },
-    b: { pos: Position; size: Size },
-  ): boolean {
-    return (
-      a.pos.x < b.pos.x + b.size.width &&
-      a.pos.x + a.size.width > b.pos.x &&
-      a.pos.y < b.pos.y + b.size.height &&
-      a.pos.y + a.size.height > b.pos.y
-    );
-  }
-
-  private isBoundaryCollision(player: { pos: Position; size: Size }): boolean {
-    const isTopLeft = this.getBoundariesData(player.pos);
+  private isBoundaryCollision(entity: {
+    pos: PositionData;
+    size: Size;
+  }): boolean {
+    const isTopLeft = this.getBoundariesData(entity.pos);
 
     const isBootomLeft = this.getBoundariesData({
-      x: player.pos.x,
-      y: player.pos.y + player.size.height,
+      x: entity.pos.x,
+      y: entity.pos.y + entity.size.height,
     });
 
     const isTopRight = this.getBoundariesData({
-      x: player.pos.x + player.size.width,
-      y: player.pos.y,
+      x: entity.pos.x + entity.size.width,
+      y: entity.pos.y,
     });
 
     const isBottomRight = this.getBoundariesData({
-      x: player.pos.x + player.size.width,
-      y: player.pos.y + player.size.height,
+      x: entity.pos.x + entity.size.width,
+      y: entity.pos.y + entity.size.height,
     });
 
-    return Boolean(isTopLeft || isTopRight || isBootomLeft || isBottomRight);
+    return isTopLeft || isTopRight || isBootomLeft || isBottomRight;
   }
 
-  private checkCollisionWithPlayer(): void {
-    const player = this.scene.player;
+  private findCollider(player: Player): Collider<GameItem> | Collider | null {
     const camera = this.scene.camera;
-
-    const isCollision = this.isBoundaryCollision(player.collider);
-    if (!isCollision) return;
-
     const collider = this.colliders.find((collider) => {
-      const colliderPos: Position = {
+      const colliderPos: PositionData = {
         x: camera.offset.x + collider.pos.x,
         y: camera.offset.y + collider.pos.y,
       };
 
-      return this.rectCollision(
+      return this.isSimpleRectCollision(
         {
           pos: colliderPos,
           size: collider.size,
@@ -316,6 +261,21 @@ export class GameMap extends GameObject<TestScene> {
       );
     });
 
+    return collider || null;
+  }
+
+  private checkCollisionWithPlayer(): void {
+    const player = this.scene.player;
+    const camera = this.scene.camera;
+
+    const isCollision = this.isBoundaryCollision({
+      pos: player.collider.pos.getData(),
+      size: player.collider.size,
+    });
+
+    if (!isCollision) return;
+
+    const collider = this.findCollider(player);
     if (!collider) return;
 
     const { Left, Right, Top, Bottom } = Direction;
@@ -328,11 +288,7 @@ export class GameMap extends GameObject<TestScene> {
           collider.size.width -
           (player.collider.pos.x - player.pos.x);
 
-        player.pos = {
-          ...player.pos,
-          x,
-        };
-
+        player.pos.setX(x);
         break;
       }
 
@@ -343,11 +299,7 @@ export class GameMap extends GameObject<TestScene> {
           player.collider.size.width -
           (player.collider.pos.x - player.pos.x);
 
-        player.pos = {
-          ...player.pos,
-          x,
-        };
-
+        player.pos.setX(x);
         break;
       }
 
@@ -358,25 +310,29 @@ export class GameMap extends GameObject<TestScene> {
           collider.size.height -
           (player.collider.pos.y - player.pos.y);
 
-        player.pos = {
-          ...player.pos,
-          y,
-        };
-
+        player.pos.setY(y);
         break;
       }
 
       case Bottom: {
         const y = camera.offset.y + collider.pos.y - player.size.height;
 
-        player.pos = {
-          ...player.pos,
-          y,
-        };
-
+        player.pos.setY(y);
         break;
       }
     }
+  }
+
+  private isSimpleRectCollision(
+    a: { pos: PositionData; size: Size },
+    b: { pos: PositionData; size: Size },
+  ): boolean {
+    return (
+      a.pos.x < b.pos.x + b.size.width &&
+      a.pos.x + a.size.width > b.pos.x &&
+      a.pos.y < b.pos.y + b.size.height &&
+      a.pos.y + a.size.height > b.pos.y
+    );
   }
 
   public render(): void {
