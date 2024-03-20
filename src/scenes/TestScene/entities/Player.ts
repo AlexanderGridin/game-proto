@@ -1,4 +1,9 @@
-import { Collider, GameObject, Img } from "../../../modules";
+import {
+  Collider,
+  GameObject,
+  SpriteSheet,
+  SpriteSheetFrameData,
+} from "../../../modules";
 import { Keyboard } from "../../../modules/Keyboard";
 import { KeyboardKeyCode } from "../../../modules/Keyboard/enums";
 import { Position, Size } from "../../../types";
@@ -9,11 +14,15 @@ import { GameItem } from "../game-items/GameItem";
 import { Direction } from "./Camera";
 
 export class Player extends GameObject<TestScene> {
-  private img = new Img("#player2");
+  private spriteSheet = new SpriteSheet({
+    imgSelector: "#player2",
+    frameSize: { width: 32, height: 32 },
+  });
+  private spriteSheetFrame: SpriteSheetFrameData | null = null;
   public pos: Position = new Position();
   public size: Size = {
-    width: 34,
-    height: 63,
+    width: 32,
+    height: 32,
   };
 
   public direction: Direction | null = null;
@@ -27,9 +36,11 @@ export class Player extends GameObject<TestScene> {
   constructor(scene: TestScene) {
     super({ scene });
 
+    this.spriteSheetFrame = this.spriteSheet.getFrame(1, 1);
+
     this.collider.size = {
-      width: 8,
-      height: 16,
+      width: 10,
+      height: 12,
     };
 
     this.pos.onChange(() => {
@@ -74,24 +85,32 @@ export class Player extends GameObject<TestScene> {
     if (Keyboard.isKeyPressed(KeyboardKeyCode.S)) {
       this.direction = Direction.Bottom;
       this.pos.setY(this.pos.y + speed);
+      this.spriteSheetFrame = this.spriteSheet.getFrame(1, 1);
+
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.W)) {
       this.direction = Direction.Top;
+      this.spriteSheetFrame = this.spriteSheet.getFrame(1, 3);
       this.pos.setY(this.pos.y - speed);
+
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.A)) {
       this.direction = Direction.Left;
+      this.spriteSheetFrame = this.spriteSheet.getFrame(1, 4);
       this.pos.setX(this.pos.x - speed);
+
       return;
     }
 
     if (Keyboard.isKeyPressed(KeyboardKeyCode.D)) {
       this.direction = Direction.Right;
+      this.spriteSheetFrame = this.spriteSheet.getFrame(1, 2);
       this.pos.setX(this.pos.x + speed);
+
       return;
     }
 
@@ -108,7 +127,7 @@ export class Player extends GameObject<TestScene> {
     if (isBush(this.hoveredItem)) {
       if (!this.hoveredItem.withBerries) return;
 
-      this.hoveredItem.withBerries = false;
+      this.hoveredItem.pickBerries();
       UI.notifications.push(`Picked item: ${this.hoveredItem.type} berries`);
       this.hoveredItem = null;
       this.scene.map.renderItems();
@@ -128,20 +147,29 @@ export class Player extends GameObject<TestScene> {
   public render(): void {
     this.drawPosText();
 
-    if (this.img) {
-      this.scene.renderer.drawImg({
-        img: this.img.element,
-        pos: this.pos,
-      });
+    if (this.spriteSheetFrame) {
+      this.scene.renderer.drawSpriteSheetFrame(this.spriteSheetFrame, this);
     }
 
-    if (this.isRenderCollider) {
-      this.scene.renderer.fillRect({
-        pos: this.collider.pos,
-        size: this.collider.size,
-        color: "red",
-      });
-    }
+    this.drawCollider();
+  }
+
+  private drawCollider(): void {
+    if (!this.isRenderCollider) return;
+
+    const color = "red";
+
+    this.scene.renderer.fillRect({
+      pos: this.collider.pos,
+      size: this.collider.size,
+      color,
+    });
+
+    this.scene.renderer.strokeRect({
+      pos: this.pos.getData(),
+      size: this.size,
+      color,
+    });
   }
 
   private drawPosText(): void {

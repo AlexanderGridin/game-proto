@@ -1,5 +1,7 @@
+import { GameObject, SpriteSheetFrameData } from ".";
+import { GameItem } from "../scenes/TestScene/game-items";
 import { globalState } from "../state";
-import { Position, PositionData, Size } from "../types";
+import { GridCell, Position, PositionData, Size } from "../types";
 
 export type DrawLineConfig = {
   start: Position | PositionData;
@@ -86,9 +88,24 @@ export class Renderer {
   }
 
   public drawImg({ img, pos }: DrawImgconfig): void {
-    // this.renderingCtx.drawImage(img, 0, 0, 32, 32, pos.x, pos.y, 64, 64);
-    // this.renderingCtx.drawImage(img, pos.x, pos.y, 128, 128);
     this.renderingCtx.drawImage(img, pos.x, pos.y);
+  }
+
+  public drawSpriteSheetFrame(
+    frame: SpriteSheetFrameData,
+    entity: GameObject | GameItem | GridCell,
+  ): void {
+    this.renderingCtx.drawImage(
+      frame.img,
+      frame.pos.x,
+      frame.pos.y,
+      frame.size.width,
+      frame.size.height,
+      entity.pos.x,
+      entity.pos.y,
+      entity.size.width,
+      entity.size.height,
+    );
   }
 
   public clear(): void {

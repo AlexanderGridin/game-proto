@@ -1,11 +1,11 @@
 import { Bush } from "./Bush";
-import { Chop } from "./Chop";
 import { GameItem, GameItemType } from "./GameItem";
-
-export const isChop = (item: GameItem): item is Chop => {
-  return item.type === GameItemType.Chop;
-};
+import { Stone } from "./Stone";
 
 export const isBush = (item: GameItem): item is Bush => {
   return item.type === GameItemType.Bush;
+};
+
+export const isStone = (item: GameItem): item is Stone => {
+  return item.type === GameItemType.Stone;
 };

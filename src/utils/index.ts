@@ -4,5 +4,6 @@ export * from "./generateId";
 export * from "./handleLoader";
 export * from "./getItemForMapCell";
 export * from "./getItemSpriteFrame";
+export * from "./isSimpleRectCollision";
 export * from "./getMapSpriteFrameByCode";
 export * from "./throwCoinNumberWithProbability";

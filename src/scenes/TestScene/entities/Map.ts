@@ -8,7 +8,9 @@ import {
   getItemForMapCell,
   getItemSpriteFrame,
   getMapSpriteFrameByCode,
+  isSimpleRectCollision,
 } from "../../../utils";
+import { isBush } from "../game-items";
 import { GameItem } from "../game-items/GameItem";
 import { Direction } from "./Camera";
 import { Grid } from "./Grid";
@@ -127,37 +129,32 @@ export class GameMap extends GameObject<TestScene> {
     ).data;
     const gridRows = this.grid.rows;
 
-    gridRows.forEach((row) => {
-      row.cells.forEach((cell) => {
+    for (let row of gridRows) {
+      for (let cell of row.cells) {
         const tileCode = layer[cell.index];
 
         const item = getItemForMapCell(tileCode, cell);
-        if (!item) return;
+        if (!item) continue;
+
+        if (isBush(item)) {
+          item.onBerriesReady(() => {
+            this.renderItems();
+          });
+        }
 
         this.itemsRegistry.set(cell.index, item);
         this.colliders.push(item.collider);
-      });
-    });
+      }
+    }
   }
 
   public renderItems(): void {
     this.itemsRenderer.clear();
+
     this.itemsRegistry.forEach((item) => {
       const frameToRender = getItemSpriteFrame(item, this.spriteSheet);
-
       if (!frameToRender) return;
-
-      this.itemsRenderer.TMPctx.drawImage(
-        frameToRender.img,
-        frameToRender.pos.x,
-        frameToRender.pos.y,
-        frameToRender.size.width,
-        frameToRender.size.height,
-        item.pos.x,
-        item.pos.y,
-        item.size.width,
-        item.size.height,
-      );
+      this.itemsRenderer.drawSpriteSheetFrame(frameToRender, item);
     });
   }
 
@@ -165,25 +162,20 @@ export class GameMap extends GameObject<TestScene> {
     const layersData = globalState.get("mapLayers");
     const mapLayer = layersData.find((layer: any) => layer.name === "map");
     const gridCells = this.grid.rows.flatMap((row) => row.cells);
+    const totalCells = gridCells.length;
 
-    gridCells.forEach((cell, index) => {
-      const tileCode = mapLayer.data[index];
-      const frameToRender = getMapSpriteFrameByCode(tileCode, this.spriteSheet);
-
-      if (!frameToRender) return;
-
-      this.preRenderer.TMPctx.drawImage(
-        frameToRender.img,
-        frameToRender.pos.x,
-        frameToRender.pos.y,
-        frameToRender.size.width,
-        frameToRender.size.height,
-        cell.pos.x,
-        cell.pos.y,
-        cell.size.width,
-        cell.size.height,
+    for (let i = 0; i < totalCells; i++) {
+      const cell = gridCells[i];
+      const tileCode = mapLayer.data[i];
+      const spriteSheetFrame = getMapSpriteFrameByCode(
+        tileCode,
+        this.spriteSheet,
       );
-    });
+
+      if (!spriteSheetFrame) return;
+
+      this.preRenderer.drawSpriteSheetFrame(spriteSheetFrame, cell);
+    }
   }
 
   public removeItem(item: GameItem): void {
@@ -206,7 +198,7 @@ export class GameMap extends GameObject<TestScene> {
     this.checkCollisionWithPlayer();
   }
 
-  private getBoundariesData(pos: PositionData) {
+  private isBoundaryPixel(pos: PositionData): boolean {
     if (!this.collidersData) return false;
 
     const cameraOffset = this.scene.camera.offset;
@@ -224,19 +216,19 @@ export class GameMap extends GameObject<TestScene> {
     pos: PositionData;
     size: Size;
   }): boolean {
-    const isTopLeft = this.getBoundariesData(entity.pos);
+    const isTopLeft = this.isBoundaryPixel(entity.pos);
 
-    const isBootomLeft = this.getBoundariesData({
+    const isBootomLeft = this.isBoundaryPixel({
       x: entity.pos.x,
       y: entity.pos.y + entity.size.height,
     });
 
-    const isTopRight = this.getBoundariesData({
+    const isTopRight = this.isBoundaryPixel({
       x: entity.pos.x + entity.size.width,
       y: entity.pos.y,
     });
 
-    const isBottomRight = this.getBoundariesData({
+    const isBottomRight = this.isBoundaryPixel({
       x: entity.pos.x + entity.size.width,
       y: entity.pos.y + entity.size.height,
     });
@@ -252,7 +244,7 @@ export class GameMap extends GameObject<TestScene> {
         y: camera.offset.y + collider.pos.y,
       };
 
-      return this.isSimpleRectCollision(
+      return isSimpleRectCollision(
         {
           pos: colliderPos,
           size: collider.size,
@@ -321,18 +313,6 @@ export class GameMap extends GameObject<TestScene> {
         break;
       }
     }
-  }
-
-  private isSimpleRectCollision(
-    a: { pos: PositionData; size: Size },
-    b: { pos: PositionData; size: Size },
-  ): boolean {
-    return (
-      a.pos.x < b.pos.x + b.size.width &&
-      a.pos.x + a.size.width > b.pos.x &&
-      a.pos.y < b.pos.y + b.size.height &&
-      a.pos.y + a.size.height > b.pos.y
-    );
   }
 
   public render(): void {
